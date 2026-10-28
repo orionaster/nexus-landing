@@ -1,0 +1,4451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus — 与现实商业逻辑同构的因果仿真世界</title>
+<meta name="description" content="Nexus 是一个因果仿真世界。输入商业问题，构建可审计的世界模型，推演不同决策，获得带可信边界的情况分布。">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0d12'/%3E%3Ccircle cx='10' cy='10' r='3' fill='%236c5ce7'/%3E%3Ccircle cx='22' cy='22' r='3' fill='%236c5ce7'/%3E%3Ccircle cx='22' cy='10' r='2' fill='%23f0a020'/%3E%3Cline x1='10' y1='10' x2='22' y2='22' stroke='%236c5ce7' stroke-width='1' opacity='0.4'/%3E%3Cline x1='10' y1='10' x2='22' y2='10' stroke='%236c5ce7' stroke-width='1' opacity='0.3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════════   NEXUS LANDING PAGE — Design System
+   Palette anchored on OKLCH seed: oklch(0.476 0.158 268.5)
+   Strategy: Committed dark — deep space + indigo primary + amber accent
+   ═══════════════════════════════════════════════════════════════*/
+
+:root {
+  /* Background layers — pure dark, no warm tint */
+  --bg-deep:      oklch(0.06 0.000 0);
+  --bg-base:      oklch(0.09 0.000 0);
+  --bg-elevated:  oklch(0.13 0.005 268);
+  --bg-surface:   oklch(0.16 0.008 268);
+
+  /* Glass layers */
+  --glass-bg:     oklch(0.14 0.012 268 / 0.55);
+  --glass-border: oklch(0.35 0.03 268 / 0.35);
+  --glass-shine:  oklch(0.95 0.008 268 / 0.08);
+
+  /* Brand colors */
+  --primary:      oklch(0.52 0.18 268);
+  --primary-glow: oklch(0.52 0.18 268 / 0.35);
+  --primary-dim:  oklch(0.40 0.12 268);
+  --accent:       oklch(0.72 0.16 65);   /* warm amber for CTA */
+  --accent-glow:  oklch(0.72 0.16 65 / 0.28);
+
+  /* Text */
+  --ink:          oklch(0.93 0.005 268);
+  --ink-muted:    oklch(0.65 0.01 268);
+  --ink-faint:    oklch(0.45 0.008 268);
+  --ink-bright:   oklch(0.98 0.000 0);
+
+  /* Borders & dividers */
+  --border:       oklch(0.22 0.008 268 / 0.6);
+  --border-faint: oklch(0.18 0.005 268 / 0.4);
+
+  /* Typography */
+  --font-sans:    'Geist', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-mono:    'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --font-cn:      'Noto Sans SC', 'Geist', system-ui, sans-serif;
+
+  /* Motion */
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:  cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:     200ms;
+  --dur-mid:      500ms;
+  --dur-slow:     1200ms;
+  --dur-glass:    600ms;
+
+  /* Layout */
+  --max-w:        1280px;
+  --gutter:       clamp(1.5rem, 5vw, 4rem);
+
+  /* Scroll world-state layer */
+  --state-hue:    268;
+  --state-y:      42%;
+  --state-progress: 11%;
+  --stage-density: 76px;
+  --stage-focus-x: 68%;
+  --stage-focus-y: 42%;
+  --stage-rotation: -9deg;
+  --stage-scale: 0.96;
+  --stage-uncertainty: 0.22;
+  --scroll-drift: 0px;
+  --scroll-counter-drift: 0px;
+  --section-drift: 0px;
+  --scroll-phase-y: 42%;
+  --transition-depth: 0px;
+}
+
+/* ── Reset ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  background: var(--bg-deep);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  font-feature-settings: 'ss01', 'cv01';
+}
+a { color: inherit; text-decoration: none; }
+img, svg { display: block; max-width: 100%; }
+button { font: inherit; border: none; background: none; color: inherit; cursor: pointer; }
+
+/* ── Utility ───────────────────────────────────────── */
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.mono { font-family: var(--font-mono); }
+.cn   { font-family: var(--font-cn); }
+
+.gradient-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+/* ── Ambient background ────────────────────────────── */
+.ambient-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.32;
+}
+
+.ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  display: none;
+  filter: none;
+  opacity: 0;
+  will-change: transform;
+}
+
+.ambient-blob--1 {
+  width: 600px; height: 600px;
+  background: var(--primary);
+  top: -10%; left: -15%;
+  animation: drift1 25s var(--ease-in-out) infinite alternate;
+}
+
+.ambient-blob--2 {
+  width: 500px; height: 500px;
+  background: oklch(0.50 0.14 200);
+  bottom: -10%; right: -10%;
+  animation: drift2 30s var(--ease-in-out) infinite alternate;
+}
+
+.ambient-blob--3 {
+  width: 400px; height: 400px;
+  background: var(--accent);
+  top: 40%; left: 50%;
+  opacity: 0.10;
+  animation: drift3 20s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes drift1 {
+  to { transform: translate(100px, 80px) scale(1.1); }
+}
+@keyframes drift2 {
+  to { transform: translate(-80px, -60px) scale(0.9); }
+}
+@keyframes drift3 {
+  to { transform: translate(-150px, 100px) scale(1.2); }
+}
+
+/* Grid noise overlay */
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(oklch(0.22 0.008 268 / 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.22 0.008 268 / 0.15) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent);
+  opacity: 0.18;
+  transition: opacity 420ms var(--ease-out);
+}
+
+.world-state-field {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.26;
+  background:
+    radial-gradient(circle at 76% var(--state-y), oklch(0.58 0.18 var(--state-hue) / 0.10), transparent 30%),
+    linear-gradient(120deg, transparent 0 46%, oklch(0.52 0.18 var(--state-hue) / 0.035) 49%, transparent 58%);
+  transition: background 520ms var(--ease-out), opacity 420ms var(--ease-out);
+}
+
+.world-state-field::before {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  background:
+    linear-gradient(115deg, transparent 0 43%, oklch(0.95 0.02 var(--state-hue) / 0.055) 49%, transparent 55%),
+    repeating-linear-gradient(90deg, transparent 0 72px, oklch(0.58 0.18 var(--state-hue) / 0.026) 73px, transparent 74px);
+  opacity: 0;
+  transform: translateX(-7%) rotate(-3deg);
+  mask-image: linear-gradient(90deg, transparent, black 18%, black 82%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 18%, black 82%, transparent);
+  transition: opacity 420ms var(--ease-out), transform 900ms var(--ease-out);
+}
+
+.world-state-field::after {
+  content: none;
+}
+
+.world-state-field.is-switching::before {
+  animation: stateFieldSweep 1450ms var(--ease-out) both;
+}
+
+@keyframes stateFieldSweep {
+  0% { opacity: 0; transform: translateX(-7%) rotate(-3deg); }
+  34% { opacity: 0.42; }
+  100% { opacity: 0; transform: translateX(7%) rotate(-3deg); }
+}
+
+.world-state-hud {
+  position: fixed;
+  left: max(0.85rem, calc((100vw - var(--max-w)) / 2 - 3.4rem));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  width: 30px;
+  height: min(220px, 38vh);
+  pointer-events: none;
+  overflow: visible;
+  opacity: 0.72;
+  transition: opacity 520ms var(--ease-out);
+}
+
+.world-state-hud::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: -16px;
+  bottom: -16px;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, oklch(0.58 0.18 var(--state-hue) / 0.32), transparent);
+  opacity: 0.36;
+  transition: opacity 500ms var(--ease-out), background 700ms var(--ease-out);
+}
+
+.world-state-hud.is-switching::before {
+  animation: stateRailPulse 1450ms var(--ease-out);
+}
+
+@keyframes stateRailPulse {
+  0% { box-shadow: 0 0 0 oklch(0.58 0.18 var(--state-hue) / 0); }
+  45% { box-shadow: 0 0 24px oklch(0.58 0.18 var(--state-hue) / 0.42); }
+  100% { box-shadow: 0 0 0 oklch(0.58 0.18 var(--state-hue) / 0); }
+}
+
+.world-state-hud__rail {
+  position: absolute;
+  left: 13px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 999px;
+  background: oklch(0.24 0.012 268 / 0.35);
+  overflow: hidden;
+}
+
+.world-state-hud__rail span {
+  display: block;
+  width: 100%;
+  height: var(--state-progress);
+  border-radius: inherit;
+  background: linear-gradient(180deg, oklch(0.58 0.18 var(--state-hue)), var(--accent));
+  box-shadow: 0 0 18px oklch(0.58 0.18 var(--state-hue) / 0.58);
+  transition: height 560ms var(--ease-out), background 700ms var(--ease-out);
+}
+
+.world-state-hud__rail::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: clamp(8px, var(--state-progress), calc(100% - 8px));
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: oklch(0.82 0.13 var(--state-hue));
+  box-shadow:
+    0 0 0 4px oklch(0.58 0.18 var(--state-hue) / 0.08),
+    0 0 16px oklch(0.58 0.18 var(--state-hue) / 0.56);
+  transform: translate(-50%, -50%);
+  transition: top 560ms var(--ease-out), background 700ms var(--ease-out);
+}
+
+.world-state-hud__index {
+  position: absolute;
+  left: -9px;
+  top: clamp(12px, var(--state-progress), calc(100% - 12px));
+  transform: translate(-100%, -50%) rotate(-90deg);
+  width: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  line-height: 1;
+  text-align: center;
+  letter-spacing: 0.12em;
+  color: oklch(0.82 0.08 var(--state-hue) / 0.64);
+  box-shadow: none;
+  transition: top 560ms var(--ease-out), color 700ms var(--ease-out);
+}
+
+.world-state-hud__panel {
+  display: none;
+}
+
+.world-state-hud__kicker {
+  display: block;
+  margin-bottom: 0.48rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: oklch(0.72 0.16 var(--state-hue));
+}
+
+.world-state-hud__title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink-bright);
+  line-height: 1.2;
+}
+
+.world-state-hud__desc {
+  margin-top: 0.22rem;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+.world-state-active .section__label::before {
+  box-shadow: 0 0 16px oklch(0.58 0.18 var(--state-hue) / 0.48);
+}
+
+.section__header,
+.cta__content {
+  position: relative;
+}
+
+.section__header::after,
+.cta__content::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1.15rem;
+  height: 1px;
+  background: linear-gradient(90deg, oklch(0.58 0.18 var(--state-hue) / 0), oklch(0.58 0.18 var(--state-hue) / 0.42), oklch(0.72 0.16 65 / 0));
+  opacity: 0;
+  transform: scaleX(0.18);
+  transform-origin: left;
+  transition: opacity 420ms var(--ease-out), transform 760ms var(--ease-out);
+}
+
+.world-state-active .section__header::after,
+.world-state-active .cta__content::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.world-state-active .section__title,
+.world-state-active .cta__title {
+  text-shadow: 0 0 34px oklch(0.58 0.18 var(--state-hue) / 0.18);
+  transition: text-shadow 760ms var(--ease-out);
+}
+
+.world-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout paint;
+  opacity: 0.24;
+  transition: opacity 420ms var(--ease-out);
+}
+
+.world-stage__field {
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(circle at var(--stage-focus-x) var(--stage-focus-y), oklch(0.58 0.18 var(--state-hue) / 0.18), transparent 24%),
+    radial-gradient(circle at calc(100% - var(--stage-focus-x)) calc(100% - var(--stage-focus-y)), oklch(0.72 0.16 65 / 0.08), transparent 22%),
+    linear-gradient(135deg, transparent 0 42%, oklch(0.58 0.18 var(--state-hue) / 0.055), transparent 58%);
+  filter: none;
+  transform: scale(var(--stage-scale));
+  transition:
+    background 560ms var(--ease-out),
+    transform 560ms var(--ease-out);
+}
+
+.world-stage__grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(oklch(0.58 0.18 var(--state-hue) / 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.58 0.18 var(--state-hue) / 0.07) 1px, transparent 1px);
+  background-size: var(--stage-density) var(--stage-density);
+  mask-image: radial-gradient(ellipse 78% 58% at var(--stage-focus-x) var(--stage-focus-y), black, transparent 76%);
+  -webkit-mask-image: radial-gradient(ellipse 78% 58% at var(--stage-focus-x) var(--stage-focus-y), black, transparent 76%);
+  transform: rotate(var(--stage-rotation)) scale(1.08);
+  opacity: 0.28;
+  transition:
+    background-size 560ms var(--ease-out),
+    transform 560ms var(--ease-out),
+    opacity 560ms var(--ease-out);
+}
+
+.world-stage__network {
+  position: absolute;
+  right: min(6vw, 5rem);
+  top: 50%;
+  width: min(760px, 58vw);
+  aspect-ratio: 1.7;
+  transform: translateY(-50%) rotate(var(--stage-rotation)) scale(var(--stage-scale));
+  transform-origin: 55% 50%;
+  opacity: 0.34;
+  transition:
+    transform 560ms var(--ease-out),
+    opacity 560ms var(--ease-out);
+}
+
+.world-stage__link,
+.world-stage__node {
+  position: absolute;
+  display: block;
+}
+
+.world-stage__link {
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  height: 1px;
+  transform: rotate(var(--r));
+  transform-origin: left;
+  background: linear-gradient(90deg, transparent, oklch(0.58 0.18 var(--state-hue) / 0.42), oklch(0.72 0.16 65 / 0.18), transparent);
+  opacity: calc(0.22 + var(--stage-uncertainty) * 0.42);
+  transition: opacity 520ms var(--ease-out), background 520ms var(--ease-out);
+}
+
+.world-stage__node {
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: oklch(0.82 0.13 var(--state-hue));
+  box-shadow:
+    0 0 0 calc(5px + var(--stage-uncertainty) * 10px) oklch(0.58 0.18 var(--state-hue) / 0.07),
+    0 0 calc(18px + var(--stage-uncertainty) * 28px) oklch(0.58 0.18 var(--state-hue) / 0.38);
+  transform: translate(-50%, -50%) scale(calc(0.88 + var(--stage-uncertainty) * 0.28));
+  transition:
+    background 520ms var(--ease-out),
+    box-shadow 520ms var(--ease-out),
+    transform 520ms var(--ease-out);
+}
+
+.world-stage__node--core {
+  width: calc(var(--s) * 1.6);
+  height: calc(var(--s) * 1.6);
+  background: oklch(0.72 0.16 65);
+}
+
+.world-stage[data-topology="fracture"] .world-stage__link {
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 10px,
+    oklch(0.58 0.18 var(--state-hue) / 0.42) 10px 24px,
+    transparent 24px 38px
+  );
+  filter: blur(calc(var(--stage-uncertainty) * 7px));
+  opacity: 0.48;
+}
+
+.world-stage[data-topology="contract"] .world-stage__node {
+  transform: translate(-50%, -50%) scale(0.92);
+  box-shadow:
+    0 0 0 4px oklch(0.58 0.18 var(--state-hue) / 0.10),
+    0 0 18px oklch(0.58 0.18 var(--state-hue) / 0.34);
+}
+
+.world-stage[data-topology="distribution"] .world-stage__network {
+  opacity: 0.46;
+}
+
+.world-stage[data-topology="distribution"] .world-stage__orbit {
+  transform: translate(-50%, -50%) rotate(calc(var(--stage-rotation) * -1)) scaleX(1.42) scaleY(0.54);
+  border-color: oklch(0.72 0.16 65 / 0.30);
+  opacity: 0.44;
+}
+
+.world-stage[data-topology="capability"] .world-stage__node:not(.world-stage__node--core) {
+  background: oklch(0.76 0.09 210);
+}
+
+.world-stage[data-topology="boundary"] .world-stage__grid {
+  opacity: 0.36;
+  mask-image: linear-gradient(90deg, transparent, black 18%, black 72%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 18%, black 72%, transparent);
+}
+
+.world-stage[data-topology="loop"] .world-stage__orbit {
+  opacity: 0.58;
+  border-color: oklch(0.58 0.18 var(--state-hue) / 0.34);
+}
+
+.world-stage[data-topology="loop"] .world-stage__link {
+  opacity: 0.58;
+}
+
+.world-stage[data-topology="covenant"] .world-stage__node,
+.world-stage[data-topology="access"] .world-stage__node {
+  transform: translate(-50%, -50%) scale(0.82);
+}
+
+.world-stage[data-topology="covenant"] .world-stage__link {
+  opacity: 0.20;
+}
+
+.world-stage__orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(420px, 32vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid oklch(0.58 0.18 var(--state-hue) / 0.16);
+  transform: translate(-50%, -50%) rotate(calc(var(--stage-rotation) * -1));
+  opacity: calc(0.10 + var(--stage-uncertainty) * 0.30);
+  transition: border-color 1400ms var(--ease-out), opacity 1400ms var(--ease-out), transform 1400ms var(--ease-out);
+}
+
+.world-stage__readout {
+  position: absolute;
+  left: max(1.25rem, calc((100vw - var(--max-w)) / 2 + 1rem));
+  bottom: 1.4rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--ink-faint);
+  opacity: 0.64;
+  transition: opacity 900ms var(--ease-out), color 1200ms var(--ease-out);
+}
+
+.world-stage__readout-index {
+  font-size: 0.7rem;
+  color: oklch(0.72 0.16 var(--state-hue) / 0.82);
+}
+
+.world-stage__readout-title {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+.world-stage.is-shifting .world-stage__network {
+  animation: none;
+}
+
+.world-stage.is-shifting .world-stage__node--core {
+  animation: none;
+}
+
+@keyframes worldStageFocus {
+  0% { filter: blur(8px); }
+  36% { filter: blur(0); }
+  100% { filter: blur(0); }
+}
+
+@keyframes worldStagePulse {
+  0% { transform: translate(-50%, -50%) scale(0.86); }
+  34% { transform: translate(-50%, -50%) scale(1.16); }
+  100% { transform: translate(-50%, -50%) scale(calc(0.88 + var(--stage-uncertainty) * 0.28)); }
+}
+
+@media (max-width: 1380px) {
+  .world-state-hud {
+    left: 0.85rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .world-state-hud {
+    display: none;
+  }
+  .world-state-field {
+    opacity: 0.48;
+  }
+}
+
+/* Scroll progress bar */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 1px;
+  width: 0%;
+  background: linear-gradient(90deg, oklch(0.58 0.18 var(--state-hue) / 0.18), oklch(0.72 0.16 65 / 0.88));
+  z-index: 200;
+  opacity: 0.7;
+  box-shadow: 0 0 16px oklch(0.58 0.18 var(--state-hue) / 0.45);
+  transition: width 0.1s linear;
+}
+
+/* Mouse spotlight */
+.spotlight {
+  display: none;
+  position: fixed;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.52 0.18 268 / 0.10), oklch(0.72 0.16 65 / 0.04) 35%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s ease;
+  will-change: transform;
+  mix-blend-mode: screen;
+}
+
+/* Section scan line on reveal */
+.reveal--scan {
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1s var(--ease-out), opacity 0.4s ease;
+}
+.reveal--scan.is-visible {
+  opacity: 1;
+  clip-path: inset(0 0% 0 0);
+}
+
+/* ── Navigation ────────────────────────────────────── */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1rem 0;
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  background: oklch(0.06 0.000 0 / 0.7);
+  border-bottom: 1px solid var(--border-faint);
+  transition: border-color var(--dur-mid) var(--ease-out);
+}
+
+.nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.nav__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+}
+
+.nav__logo-mark {
+  width: 28px; height: 28px;
+  position: relative;
+}
+
+.nav__logo-mark svg {
+  width: 100%; height: 100%;
+}
+
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav__links a {
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.nav__links a:hover { color: var(--ink); }
+
+.nav__cta {
+  font-size: 0.875rem;
+  padding: 0.5rem 1.25rem;
+  background: var(--accent);
+  color: oklch(0.15 0.02 65);
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all var(--dur-fast) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav__cta::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, oklch(0.98 0.000 0 / 0.2), transparent);
+  transition: left var(--dur-mid) var(--ease-out);
+}
+
+.nav__cta:hover::before {
+  left: 100%;
+}
+
+.nav__cta:hover {
+  background: oklch(0.78 0.15 65);
+  transform: translateY(-1px);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+@media (max-width: 768px) {
+  .nav__links { display: none; }
+  .nav__cta { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════   HERO SECTION
+   ═══════════════════════════════════════════════════*/
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  padding: 8rem 0 6rem;
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 3;
+}
+
+.hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  padding: 0.375rem 0.875rem;
+  border: 1px solid oklch(0.52 0.18 268 / 0.3);
+  border-radius: 100px;
+  background: oklch(0.52 0.18 268 / 0.06);
+}
+
+.hero__eyebrow-dot {
+  width: 6px; height: 6px;
+  background: var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--primary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero__title {
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.5rem;
+  max-width: 900px;
+}
+
+.hero__title-line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero__title-line span {
+  display: inline-block;
+  transform: translateY(110%);
+  opacity: 0;
+  animation: reveal-up 1s var(--ease-out) forwards;
+}
+
+.hero__title-line:nth-child(1) span { animation-delay: 0.2s; }
+.hero__title-line:nth-child(2) span { animation-delay: 0.4s; }
+.hero__title-line:nth-child(3) span { animation-delay: 0.6s; }
+
+@keyframes reveal-up {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.hero__title-accent {
+  color: var(--primary);
+  position: relative;
+}
+
+.hero__subtitle {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--ink-muted);
+  max-width: 580px;
+  line-height: 1.65;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fade-in 1s var(--ease-out) 0.9s forwards;
+}
+
+@keyframes fade-in {
+  to { opacity: 1; }
+}
+
+.hero__actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fade-in 1s var(--ease-out) 1.1s forwards;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all var(--dur-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: oklch(0.15 0.02 65);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn--primary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, oklch(0.98 0.000 0 / 0.3), transparent);
+  transition: left var(--dur-slow) var(--ease-out);
+}
+
+.btn--primary:hover::before {
+  left: 100%;
+}
+
+.btn--primary:hover {
+  background: oklch(0.78 0.15 65);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px var(--accent-glow);
+}
+
+.btn--ghost {
+  border: 1px solid var(--border);
+  color: var(--ink);
+  background: transparent;
+}
+
+.btn--ghost:hover {
+  border-color: var(--primary);
+  background: oklch(0.52 0.18 268 / 0.06);
+}
+
+.btn__arrow {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover .btn__arrow {
+  transform: translateX(4px);
+}
+
+/* Hero causal graph canvas */
+.hero__visual {
+  position: absolute;
+  top: 50%;
+  right: -2%;
+  transform: translateY(-50%);
+  width: min(46vw, 680px);
+  height: min(46vw, 680px);
+  min-width: 520px;
+  min-height: 520px;
+  opacity: 0.88;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero__visual::before {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border-radius: 28px;
+  border: 1px solid oklch(0.52 0.18 268 / .18);
+  background:
+    linear-gradient(oklch(0.52 0.18 268 / .07) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.52 0.18 268 / .055) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at 55% 48%, black, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle at 55% 48%, black, transparent 72%);
+}
+
+.hero__visual::after {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  border: 1px solid oklch(0.72 0.16 65 / .20);
+  box-shadow:
+    inset 0 0 60px oklch(0.52 0.18 268 / .10),
+    0 0 80px oklch(0.52 0.18 268 / .12);
+  animation: hero-core-breathe 6s var(--ease-out) infinite;
+}
+
+.hero__visual canvas {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+.hero__world-panel {
+  position: absolute;
+  z-index: 3;
+  right: 5%;
+  bottom: 10%;
+  width: min(260px, 40%);
+  padding: .95rem;
+  border: 1px solid oklch(0.52 0.18 268 / .24);
+  border-radius: 14px;
+  background: oklch(0.07 0.006 268 / .74);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-shine),
+    0 18px 60px oklch(0 0 0 / .28);
+  backdrop-filter: blur(16px) saturate(1.25);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+}
+
+.hero__world-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  margin-bottom: .72rem;
+}
+
+.hero__world-kicker::after {
+  content: 'RUNNING';
+  color: var(--accent);
+  font-size: .62rem;
+}
+
+.hero__world-row {
+  display: grid;
+  grid-template-columns: 4.8rem 1fr;
+  gap: .65rem;
+  align-items: center;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  padding: .42rem 0;
+  border-top: 1px solid oklch(0.93 0.005 268 / .06);
+}
+
+.hero__world-track {
+  height: 4px;
+  border-radius: 999px;
+  background: oklch(0.93 0.005 268 / .08);
+  overflow: hidden;
+}
+
+.hero__world-track span {
+  display: block;
+  height: 100%;
+  width: var(--w);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  box-shadow: 0 0 16px oklch(0.52 0.18 268 / .45);
+}
+
+@keyframes hero-core-breathe {
+  0%, 100% { transform: scale(.98); opacity: .62; }
+  50% { transform: scale(1.04); opacity: .92; }
+}
+
+@media (max-width: 1024px) {
+  .hero__visual { display: none; }
+}
+
+/* Hero claims */
+.hero__claims {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-faint);
+  opacity: 0;
+  animation: fade-in 1s var(--ease-out) 1.4s forwards;
+}
+
+.hero__claim {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-right: 2rem;
+}
+
+.hero__claim + .hero__claim {
+  padding-left: 2rem;
+  border-left: 1px solid var(--border-faint);
+}
+
+.hero__claim-title {
+  color: var(--ink-bright);
+  font-size: 1.04rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.hero__claim-en {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: oklch(0.72 0.16 var(--state-hue) / 0.82);
+}
+
+.hero__claim-copy {
+  font-size: 0.8125rem;
+  color: var(--ink-muted);
+  line-height: 1.7;
+  max-width: 22ch;
+}
+
+@media (max-width: 640px) {
+  .hero__claims {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .hero__claim,
+  .hero__claim + .hero__claim {
+    padding-left: 0;
+    padding-right: 0;
+    border-left: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════   SECTION COMMONS
+   ═══════════════════════════════════════════════════*/
+.section {
+  position: relative;
+  z-index: 2;
+  padding: 8rem 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+@media (max-width: 768px) {
+  .section { padding: 5rem 0; }
+}
+
+.section > .container {
+  position: relative;
+  z-index: 2;
+  transition:
+    transform 520ms var(--ease-out),
+    opacity 520ms var(--ease-out);
+}
+
+.section__header {
+  margin-bottom: 4rem;
+  max-width: 720px;
+}
+
+.section__label {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section__label::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--primary);
+}
+
+.section__title {
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+
+.section__desc {
+  font-size: 1.0625rem;
+  color: var(--ink-muted);
+  line-height: 1.65;
+}
+
+/* Reveal on scroll — base with blur */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.72s var(--ease-out), transform 0.72s var(--ease-out);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children */
+.reveal--stagger > * {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.52s var(--ease-out), transform 0.52s var(--ease-out);
+}
+.reveal--stagger.is-visible > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Clip-path reveal — cinematic unmask */
+.reveal--clip {
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1.2s var(--ease-out), opacity 0.4s ease;
+}
+.reveal--clip.is-visible {
+  opacity: 1;
+  clip-path: inset(0 0 0% 0);
+}
+
+/* Blur reveal — focus-in */
+.reveal--blur {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.62s var(--ease-out), transform 0.62s var(--ease-out);
+}
+.reveal--blur.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal--stagger.is-visible > *:nth-child(1) { transition-delay: 0ms; }
+.reveal--stagger.is-visible > *:nth-child(2) { transition-delay: 80ms; }
+.reveal--stagger.is-visible > *:nth-child(3) { transition-delay: 160ms; }
+.reveal--stagger.is-visible > *:nth-child(4) { transition-delay: 240ms; }
+.reveal--stagger.is-visible > *:nth-child(5) { transition-delay: 320ms; }
+.reveal--stagger.is-visible > *:nth-child(6) { transition-delay: 400ms; }
+.reveal--stagger.is-visible > *:nth-child(7) { transition-delay: 480ms; }
+.reveal--stagger.is-visible > *:nth-child(8) { transition-delay: 560ms; }
+
+/* ═══════════════════════════════════════════════════   SECTION: PROBLEM — 决策为什么难
+   ═══════════════════════════════════════════════════*/
+.problem {
+  background: transparent;
+}
+
+.problem__grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.problem__map {
+  position: relative;
+  min-height: 430px;
+  padding: 1.75rem;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  background:
+    radial-gradient(circle at 25% 24%, oklch(0.52 0.18 268 / .22), transparent 25%),
+    radial-gradient(circle at 80% 68%, oklch(0.72 0.16 65 / .18), transparent 28%),
+    linear-gradient(145deg, oklch(0.12 0.03 268 / .72), oklch(0.06 0.01 268 / .84));
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--glass-shine),
+              0 12px 50px oklch(0 0 0 / .22);
+}
+
+.problem__map::before {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border: 1px solid oklch(1 0 0 / .08);
+  border-radius: 999px;
+  transform: rotate(-18deg);
+}
+
+.problem__map::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 0 18%, oklch(0.93 0.005 268 / .12) 48%, transparent 82%),
+    linear-gradient(oklch(0.52 0.18 268 / .07) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.52 0.18 268 / .055) 1px, transparent 1px);
+  background-size: 100% 100%, 38px 38px, 38px 38px;
+  mask-image: radial-gradient(ellipse 76% 64% at 56% 50%, black, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 76% 64% at 56% 50%, black, transparent 80%);
+  opacity: .55;
+  pointer-events: none;
+}
+
+.problem__hidden-layer {
+  position: absolute;
+  inset: 21% 9% 18%;
+  z-index: 1;
+  opacity: .82;
+  pointer-events: none;
+}
+
+.problem__hidden-layer svg {
+  width: 100%;
+  height: 100%;
+}
+
+.problem__hidden-layer path {
+  filter: drop-shadow(0 0 10px oklch(0.52 0.18 268 / .28));
+}
+
+.problem__scanline {
+  position: absolute;
+  z-index: 3;
+  left: 12%;
+  right: 12%;
+  top: 49%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, oklch(0.52 0.18 268 / .72), oklch(0.72 0.16 65 / .64), transparent);
+  box-shadow: 0 0 26px oklch(0.52 0.18 268 / .36);
+  pointer-events: none;
+}
+
+.problem__map-title {
+  position: relative;
+  z-index: 4;
+  max-width: 13ch;
+  font-size: clamp(2rem, 3.4vw, 3.65rem);
+  line-height: .95;
+  letter-spacing: -0.04em;
+  font-weight: 750;
+  text-shadow: 0 18px 60px oklch(0 0 0 / .65);
+}
+
+.problem__map-caption {
+  position: absolute;
+  left: 1.75rem;
+  bottom: 1.75rem;
+  z-index: 4;
+  max-width: 32ch;
+  color: var(--ink-muted);
+  font-size: .95rem;
+}
+
+.problem__node {
+  position: absolute;
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 8px oklch(0.52 0.18 268 / .12), 0 0 34px oklch(0.52 0.18 268 / .7);
+}
+
+.problem__node:nth-of-type(1) { left: 20%; top: 54%; }
+.problem__node:nth-of-type(2) { left: 48%; top: 36%; background: var(--accent); box-shadow: 0 0 0 8px oklch(0.72 0.16 65 / .12), 0 0 34px oklch(0.72 0.16 65 / .55); }
+.problem__node:nth-of-type(3) { right: 18%; top: 62%; }
+.problem__node:nth-of-type(4) { left: 38%; bottom: 22%; background: oklch(0.45 0.008 268); }
+
+.problem__fracture {
+  position: absolute;
+  z-index: 2;
+  inset: 30% 16% 20%;
+  opacity: .82;
+}
+
+.problem__fracture svg {
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .problem__map::after {
+    animation: problemGridDrift 9s linear infinite;
+  }
+
+  .problem__scanline {
+    animation: problemScan 4.8s cubic-bezier(.22, 1, .36, 1) infinite;
+  }
+
+  .problem__fracture path,
+  .problem__hidden-layer path {
+    stroke-dashoffset: 60;
+    animation: problemPathFlow 7s linear infinite;
+  }
+}
+
+@keyframes problemGridDrift {
+  to { background-position: 0 0, 38px 38px, 38px 38px; }
+}
+
+@keyframes problemScan {
+  0%, 100% { transform: translateY(-52px) scaleX(.72); opacity: .08; }
+  45% { transform: translateY(0) scaleX(1); opacity: .95; }
+  76% { transform: translateY(58px) scaleX(.82); opacity: .18; }
+}
+
+@keyframes problemPathFlow {
+  to { stroke-dashoffset: 0; }
+}
+
+.problem__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .875rem;
+}
+
+.problem__card {
+  padding: 1.35rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow: inset 0 0 0 1px var(--glass-shine),
+              0 4px 20px oklch(0 0 0 / 0.15);
+  transition: border-color var(--dur-mid) var(--ease-out),
+              box-shadow var(--dur-mid) var(--ease-out),
+              transform var(--dur-mid) var(--ease-out);
+}
+
+@media (max-width: 980px) {
+  .problem__grid { grid-template-columns: 1fr; }
+  .problem__map { min-height: 380px; }
+  .problem__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .problem__map-caption { max-width: 42ch; }
+}
+
+@media (max-width: 640px) {
+  .problem__cards { grid-template-columns: 1fr; }
+}
+
+.problem__card:hover {
+  border-color: oklch(0.52 0.18 268 / 0.5);
+  box-shadow: inset 0 0 0 1px oklch(0.52 0.18 268 / 0.08),
+              0 8px 32px oklch(0.52 0.18 268 / 0.10);
+  transform: translateY(-5px);
+}
+
+.problem__card-icon {
+  width: 34px;
+  height: 34px;
+  margin-bottom: .9rem;
+  color: var(--ink-faint);
+}
+
+.problem__card-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.problem__card-desc {
+  font-size: 0.9375rem;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+.problem__card-en {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  margin-top: 0.75rem;
+}
+
+/* ═══════════════════════════════════════════════════   SECTION: WHAT IS NEXUS — 三要素   ═══════════════════════════════════════════════════*/
+.triad {
+  position: relative;
+}
+
+.triad__layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .triad__layout { grid-template-columns: 1fr; gap: 3rem; }
+}
+
+.triad__visual {
+  position: relative;
+  aspect-ratio: 1;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.triad__visual svg {
+  width: 100%;
+  height: 100%;
+}
+
+.triad__elements {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.triad__item {
+  position: relative;
+  padding-left: 3rem;
+}
+
+.triad__item-num {
+  position: absolute;
+  left: 0; top: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--primary);
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid oklch(0.52 0.18 268 / 0.3);
+  border-radius: 8px;
+}
+
+.triad__item-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.triad__item-title-en {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--ink-faint);
+  margin-left: 0.5rem;
+}
+
+.triad__item-desc {
+  color: var(--ink-muted);
+  line-height: 1.65;
+  font-size: 0.9375rem;
+}
+
+/* ═══════════════════════════════════════════════════   SECTION: OUTPUT — 概率分布 / 可信边界 / 审计路径
+   ═══════════════════════════════════════════════════*/
+.output {
+  position: relative;
+  background:
+    radial-gradient(ellipse 70% 60% at 68% 36%, oklch(0.52 0.18 268 / .10), transparent 68%),
+    linear-gradient(180deg, oklch(0.05 0.000 0 / .42), oklch(0.08 0.006 268 / .54));
+}
+
+.output__stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: stretch;
+}
+
+.output__viz {
+  position: relative;
+  min-height: 520px;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 68% 18%, oklch(0.52 0.18 268 / .22), transparent 34%),
+    radial-gradient(circle at 22% 82%, oklch(0.72 0.16 65 / .13), transparent 30%),
+    linear-gradient(145deg, oklch(0.13 0.02 268 / .86), oklch(0.055 0.006 268 / .96)),
+    var(--bg-elevated);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-shine),
+    0 22px 80px oklch(0 0 0 / .36),
+    0 0 90px oklch(0.52 0.18 268 / .12);
+}
+
+.output__viz::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(oklch(0.52 0.18 268 / .10) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.52 0.18 268 / .08) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 78% 64% at 52% 46%, black, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 78% 64% at 52% 46%, black, transparent);
+}
+
+.output__viz::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: -40% auto -40% -28%;
+  width: 26%;
+  background: linear-gradient(90deg, transparent, oklch(0.93 0.005 268 / .10), transparent);
+  transform: rotate(12deg);
+  opacity: .42;
+  pointer-events: none;
+}
+
+.output__viz svg {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+}
+
+.output__viz-grid {
+  stroke: oklch(0.93 0.005 268 / .075);
+  stroke-width: 1;
+}
+
+.output__viz-grid--strong {
+  stroke: oklch(0.93 0.005 268 / .14);
+}
+
+.output__range {
+  fill: oklch(0.52 0.18 268 / .10);
+  stroke: oklch(0.52 0.18 268 / .30);
+}
+
+.output__range-line {
+  stroke: oklch(0.93 0.005 268 / .16);
+  stroke-dasharray: 4 8;
+}
+
+.output__range-label {
+  fill: oklch(0.72 0.16 65 / .92);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.output__histogram rect {
+  fill: oklch(0.52 0.18 268 / .13);
+}
+
+.output__area {
+  fill: url(#outputAreaFill);
+}
+
+.output__trace {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.output__trace--main {
+  stroke: url(#outputLineGradient);
+  stroke-width: 3.4;
+  filter: url(#outputLineGlow);
+}
+
+.output__trace--upper,
+.output__trace--lower {
+  stroke: oklch(0.72 0.16 65 / .46);
+  stroke-width: 1.3;
+  stroke-dasharray: 8 9;
+}
+
+.output__branch {
+  stroke: oklch(0.52 0.18 268 / .40);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 7;
+}
+
+.output__node {
+  filter: url(#outputNodeGlow);
+}
+
+.output__node-ring {
+  fill: none;
+  stroke-width: 1.2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.output__label-box {
+  fill: oklch(0.07 0.006 268 / .78);
+  stroke: oklch(0.52 0.18 268 / .30);
+}
+
+.output__label-box--warm {
+  stroke: oklch(0.72 0.16 65 / .34);
+}
+
+.output__svg-title {
+  fill: var(--ink-bright);
+  font-family: var(--font-sans);
+  font-weight: 650;
+  font-size: 15px;
+}
+
+.output__svg-mono {
+  fill: oklch(0.68 0.012 268);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.output__axis-label {
+  fill: oklch(0.68 0.012 268);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.output__tag {
+  position: absolute;
+  z-index: 2;
+  left: 1.25rem;
+  top: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .45rem .7rem;
+  border: 1px solid oklch(0.52 0.18 268 / .28);
+  border-radius: 999px;
+  background: oklch(0.08 0.006 268 / .72);
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.output__tag::before {
+  content: '';
+  width: .44rem;
+  height: .44rem;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 18px oklch(0.72 0.16 65 / .85);
+}
+
+.output__readout {
+  position: absolute;
+  z-index: 2;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  width: min(300px, calc(100% - 2.5rem));
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid oklch(0.72 0.16 65 / .22);
+  background: oklch(0.08 0.006 268 / .72);
+  box-shadow: inset 0 0 0 1px var(--glass-shine);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.output__readout-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--ink-bright);
+  margin-bottom: .55rem;
+}
+
+.output__readout-title span {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 600;
+}
+
+.output__readout-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .6rem;
+}
+
+.output__metric {
+  font-family: var(--font-mono);
+}
+
+.output__metric strong {
+  display: block;
+  color: var(--primary);
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.output__metric span {
+  color: var(--ink-faint);
+  font-size: .66rem;
+}
+
+.output__readout-bars {
+  display: grid;
+  gap: .42rem;
+  margin-top: .85rem;
+}
+
+.output__readout-row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 2.2rem;
+  align-items: center;
+  gap: .55rem;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: .64rem;
+}
+
+.output__readout-track {
+  height: 4px;
+  border-radius: 999px;
+  background: oklch(0.93 0.005 268 / .08);
+  overflow: hidden;
+}
+
+.output__readout-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  box-shadow: 0 0 16px oklch(0.52 0.18 268 / .45);
+}
+
+.output__cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.output__card {
+  position: relative;
+  padding: 1.35rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--glass-bg);
+  box-shadow: inset 0 0 0 1px var(--glass-shine);
+  overflow: hidden;
+}
+
+.output__card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 0%, oklch(0.52 0.18 268 / .13), transparent 36%),
+    linear-gradient(90deg, oklch(0.52 0.18 268 / .10), transparent 38%);
+  opacity: .72;
+  pointer-events: none;
+}
+
+.output__card > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .output__viz::after {
+    animation: output-scan 8s cubic-bezier(.22, 1, .36, 1) infinite;
+  }
+
+  .output__trace--main {
+    stroke-dasharray: 760;
+    stroke-dashoffset: 760;
+    animation: output-draw 1.6s cubic-bezier(.22, 1, .36, 1) .25s forwards;
+  }
+
+  .output__trace--upper,
+  .output__trace--lower,
+  .output__branch {
+    stroke-dashoffset: 120;
+    animation: output-drift 8s linear infinite;
+  }
+
+  .output__node-ring {
+    animation: output-pulse-ring 2.8s cubic-bezier(.22, 1, .36, 1) infinite;
+  }
+}
+
+@keyframes output-scan {
+  0%, 18% { transform: translateX(0) rotate(12deg); opacity: 0; }
+  42% { opacity: .42; }
+  72%, 100% { transform: translateX(520%) rotate(12deg); opacity: 0; }
+}
+
+@keyframes output-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes output-drift {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes output-pulse-ring {
+  0%, 100% { transform: scale(.86); opacity: .25; }
+  48% { transform: scale(1.45); opacity: .06; }
+}
+
+.output__card-kicker {
+  font-family: var(--font-mono);
+  color: var(--primary);
+  font-size: .72rem;
+  margin-bottom: .75rem;
+}
+
+.output__card-title {
+  font-size: 1.16rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin-bottom: .55rem;
+}
+
+.output__card-desc {
+  color: var(--ink-muted);
+  font-size: .94rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 980px) {
+  .output__stage {
+    grid-template-columns: 1fr;
+  }
+
+  .output__viz,
+  .output__viz svg {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 640px) {
+  .output__viz,
+  .output__viz svg {
+    min-height: 380px;
+  }
+
+  .output__svg-title {
+    font-size: 13px;
+  }
+
+  .output__svg-mono,
+  .output__range-label,
+  .output__axis-label {
+    font-size: 9px;
+  }
+
+  .output__axis-label--mobile-hide {
+    display: none;
+  }
+
+  .output__readout {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    margin: -3.6rem 1rem 1rem;
+    width: auto;
+  }
+}
+
+/* ═══════════════════════════════════════════════════   SECTION: EIGHT CAPABILITIES — Bento Grid
+   ═══════════════════════════════════════════════════*/
+.capabilities {
+  background: transparent;
+}
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(200px, auto);
+  gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .bento { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .bento { grid-template-columns: 1fr; }
+}
+
+.bento__cell {
+  position: relative;
+  padding: 1.75rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform var(--dur-glass) var(--ease-out),
+              border-color var(--dur-mid) var(--ease-out),
+              box-shadow var(--dur-mid) var(--ease-out);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  box-shadow: inset 0 0 0 1px var(--glass-shine),
+              0 4px 24px oklch(0 0 0 / 0.2);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.bento__cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    var(--glass-shine) 0%,
+    transparent 30%,
+    transparent 70%,
+    var(--glass-shine) 100%
+  );
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.bento__cell:hover {
+  border-color: oklch(0.52 0.18 268 / 0.6);
+  box-shadow: inset 0 0 0 1px oklch(0.52 0.18 268 / 0.12),
+              0 12px 48px oklch(0.52 0.18 268 / 0.15),
+              0 4px 24px oklch(0 0 0 / 0.3);
+  transform: translateY(-4px);
+}
+
+.bento__cell--large { grid-column: span 2; grid-row: span 2; }
+.bento__cell--wide  { grid-column: span 2; }
+
+.bento__cell--model {
+  background:
+    radial-gradient(circle at 78% 22%, oklch(0.52 0.18 268 / .16), transparent 30%),
+    var(--glass-bg);
+}
+
+@media (max-width: 640px) {
+  .bento__cell--large,
+  .bento__cell--wide { grid-column: span 1; grid-row: span 1; }
+}
+
+.bento__cell-glow {
+  position: absolute;
+  top: -50%; right: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, var(--primary-glow), transparent 50%);
+  opacity: 0;
+  transition: opacity var(--dur-mid) var(--ease-out);
+  pointer-events: none;
+}
+
+.bento__cell:hover .bento__cell-glow { opacity: 0.7; }
+
+.bento__cell-num {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.75rem;
+}
+
+.bento__cell-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.375rem;
+  position: relative;
+  z-index: 1;
+}
+
+.bento__cell-title-en {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--primary);
+  margin-bottom: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+.bento__cell-desc {
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+/* Large cell visual — causal graph mini */
+.bento__cell--large .bento__visual {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 60%;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Mini icon for small bento cells */
+.bento__mini-icon {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  width: 48px;
+  height: 48px;
+  opacity: 0.6;
+  transition: opacity var(--dur-mid) var(--ease-out);
+}
+
+.bento__cell:hover .bento__mini-icon {
+  opacity: 1;
+}
+
+.bento__visual-inline {
+  opacity: 0.5;
+  transition: opacity var(--dur-mid) var(--ease-out);
+}
+
+.bento__cell:hover .bento__visual-inline {
+  opacity: 0.8;
+}
+
+/* ═══════════════════════════════════════════════════   SECTION: DIFFERENTIATION — vs 竞品
+   ═══════════════════════════════════════════════════*/
+.diff {
+  position: relative;
+}
+
+.diff::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 30% 50%, oklch(0.52 0.18 268 / 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.diff__table-wrap {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  box-shadow: inset 0 0 0 1px var(--glass-shine),
+              0 8px 40px oklch(0 0 0 / 0.3);
+}
+
+.diff__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.diff__table th,
+.diff__table td {
+  text-align: left;
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.diff__table th {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1.25rem 1rem;
+  position: sticky;
+  top: 64px;
+  background: oklch(0.10 0.005 268 / 0.9);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  z-index: 5;
+  border-bottom: 1px solid oklch(0.35 0.03 268 / 0.3);
+}
+
+.diff__table th:nth-child(2) {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.diff__table td {
+  font-size: 0.9375rem;
+  vertical-align: top;
+}
+
+.diff__table tr:hover td {
+  background: oklch(0.52 0.18 268 / 0.04);
+}
+
+.diff__table tr:hover .diff__nexus {
+  background: oklch(0.52 0.18 268 / 0.10);
+}
+
+.diff__table .diff__name {
+  font-weight: 600;
+  color: var(--ink-bright);
+}
+
+.diff__table .diff__nexus {
+  color: var(--primary);
+  font-weight: 500;
+  position: relative;
+  box-shadow: inset 3px 0 0 var(--primary);
+  background: oklch(0.52 0.18 268 / 0.06);
+}
+
+.diff__table .diff__other {
+  color: var(--ink-muted);
+}
+
+.diff__table .diff__label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 768px) {
+  .diff__table-wrap {
+    overflow: visible !important;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .diff__table,
+  .diff__table tbody,
+  .diff__table tr,
+  .diff__table td {
+    display: block;
+    width: 100%;
+  }
+
+  .diff__table thead {
+    display: none;
+  }
+
+  .diff__table tr {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    background:
+      linear-gradient(145deg, oklch(0.13 0.015 268 / .72), oklch(0.07 0.006 268 / .82)),
+      var(--glass-bg);
+    box-shadow: inset 0 0 0 1px var(--glass-shine);
+  }
+
+  .diff__table th,
+  .diff__table td {
+    padding: .72rem 0;
+    border-bottom: 1px solid var(--border-faint);
+  }
+
+  .diff__table td:first-child {
+    padding-top: 0;
+  }
+
+  .diff__table td:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .diff__table td:not(:first-child)::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: .35rem;
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    color: var(--ink-faint);
+  }
+
+  .diff__table .diff__nexus {
+    margin: .2rem 0;
+    padding: .85rem;
+    border: 1px solid oklch(0.52 0.18 268 / .34);
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px oklch(0.93 0.005 268 / .04);
+    background: oklch(0.52 0.18 268 / .13);
+  }
+}
+
+/* ═══════════════════════════════════════════════════   SECTION: SEVEN-STEP LOOP — 滚动叙事
+   ═══════════════════════════════════════════════════*/
+.loop {
+  background: transparent;
+  overflow: visible;
+}
+
+.loop.world-state-active > .container {
+  transform: none;
+  animation: none;
+}
+
+.loop__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, .72fr);
+  gap: clamp(2.5rem, 5vw, 5.5rem);
+  align-items: start;
+}
+
+.loop__steps {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  --loop-active-top: 2.5rem;
+  --loop-active-height: 0px;
+}
+
+/* Vertical connecting line */
+.loop__steps::before {
+  content: '';
+  position: absolute;
+  left: 39px;
+  top: 2.5rem;
+  bottom: 2.5rem;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    oklch(0.52 0.18 268 / 0) 0%,
+    oklch(0.52 0.18 268 / 0.12) 5%,
+    oklch(0.52 0.18 268 / 0.12) 95%,
+    oklch(0.52 0.18 268 / 0) 100%
+  );
+  pointer-events: none;
+  border-radius: 2px;
+  box-shadow: 0 0 8px oklch(0.52 0.18 268 / 0.1);
+}
+
+.loop__steps::after {
+  content: '';
+  position: absolute;
+  left: 39px;
+  top: var(--loop-active-top);
+  height: var(--loop-active-height);
+  width: 2px;
+  border-radius: 2px;
+  opacity: 0;
+  background: linear-gradient(to bottom, var(--primary), var(--accent));
+  box-shadow: 0 0 20px oklch(0.52 0.18 268 / .58);
+  pointer-events: none;
+  transition: top var(--dur-mid) var(--ease-out),
+              height var(--dur-mid) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out);
+}
+
+.loop__steps.is-pointing::after {
+  opacity: 1;
+}
+
+/* Arrow between steps */
+.loop__step {
+  position: relative;
+}
+
+.loop__step {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--border-faint);
+  transition: background var(--dur-mid) var(--ease-out),
+              opacity var(--dur-mid) var(--ease-out),
+              transform var(--dur-mid) var(--ease-out);
+}
+
+.loop__step:hover {
+  background: oklch(0.52 0.18 268 / 0.02);
+}
+
+.loop__steps.is-pointing .loop__step:not(.loop__step--active) {
+  opacity: .46;
+}
+
+.loop__step-num {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--ink-faint);
+  line-height: 1;
+  transition: color var(--dur-mid) var(--ease-out);
+}
+
+.loop__step:hover .loop__step-num {
+  color: var(--primary);
+}
+
+.loop__step--active {
+  background: oklch(0.52 0.18 268 / 0.06);
+  box-shadow: inset 3px 0 0 var(--primary);
+  transform: translateX(4px);
+}
+
+.loop__step--active .loop__step-num {
+  color: var(--primary);
+  text-shadow: 0 0 24px oklch(0.52 0.18 268 / 0.6);
+}
+
+.loop__step--active .loop__step-title {
+  color: var(--ink-bright);
+}
+
+.loop__step-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.loop__step-title-en {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.loop__step-desc {
+  color: var(--ink-muted);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 768px) {
+  .loop__body { grid-template-columns: 1fr; }
+  .loop__step { grid-template-columns: 60px 1fr; }
+  .loop__step-desc { grid-column: 2; }
+}
+
+/* Loop visual — simulation core */
+.loop__indicator {
+  position: sticky;
+  top: 7rem;
+  width: 100%;
+  max-width: 430px;
+  margin: .75rem auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loop__core-shell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.loop__core-shell::before {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, oklch(0.52 0.18 268 / .16), transparent 42%),
+    radial-gradient(circle at 68% 32%, oklch(0.72 0.16 65 / .10), transparent 24%);
+  filter: blur(18px);
+  opacity: .82;
+  pointer-events: none;
+}
+
+.loop__core-shell::after {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  border: 1px solid oklch(0.52 0.18 268 / .22);
+  box-shadow:
+    inset 0 0 42px oklch(0.52 0.18 268 / .08),
+    0 0 44px oklch(0.52 0.18 268 / .10);
+  pointer-events: none;
+}
+
+.loop__core-scan {
+  position: absolute;
+  z-index: 1;
+  inset: 22%;
+  border-radius: 50%;
+  background:
+    linear-gradient(oklch(0.52 0.18 268 / .08) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.52 0.18 268 / .08) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(circle, black 0 44%, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle, black 0 44%, transparent 72%);
+  opacity: .65;
+  pointer-events: none;
+}
+
+.loop__core-scan::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, transparent 0 72%, oklch(0.72 0.16 65 / .28), transparent 88% 100%);
+}
+
+.loop__ring {
+  position: absolute;
+  inset: var(--inset);
+  border-radius: 50%;
+  border: 1px solid oklch(0.52 0.18 268 / var(--alpha));
+  opacity: .82;
+}
+
+.loop__ring--outer {
+  --inset: 0;
+  --alpha: .16;
+}
+
+.loop__ring--middle {
+  --inset: 14%;
+  --alpha: .20;
+}
+
+.loop__ring--inner {
+  --inset: 29%;
+  --alpha: .14;
+}
+
+.loop__ring--outer::before,
+.loop__ring--middle::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(from 210deg, transparent 0 36%, oklch(0.52 0.18 268 / .58) 42%, transparent 49% 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+}
+
+.loop__ring--middle::before {
+  transform: rotate(132deg);
+  opacity: .72;
+}
+
+.loop__axis {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  background:
+    linear-gradient(90deg, transparent 49.5%, oklch(0.45 0.008 268 / .18) 50%, transparent 50.5%),
+    linear-gradient(0deg, transparent 49.5%, oklch(0.45 0.008 268 / .18) 50%, transparent 50.5%);
+  opacity: .55;
+  pointer-events: none;
+}
+
+.loop__indicator-center {
+  position: absolute;
+  z-index: 2;
+  width: 46%;
+  min-width: 152px;
+  min-height: 152px;
+  padding: 1rem;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .46rem;
+  font-family: var(--font-mono);
+  text-align: center;
+  color: var(--ink-muted);
+  border: 1px solid oklch(0.52 0.18 268 / .24);
+  background:
+    linear-gradient(135deg, oklch(0.93 0.005 268 / .06), transparent 42%),
+    oklch(0.09 0.006 268 / .72);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-shine),
+    inset 0 0 44px oklch(0.52 0.18 268 / .08),
+    0 20px 70px oklch(0 0 0 / .34);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+}
+
+.loop__indicator-center::before {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border-radius: 16px;
+  border: 1px solid oklch(0.72 0.16 65 / .18);
+  opacity: .78;
+  pointer-events: none;
+}
+
+.loop__indicator-center::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow:
+    0 0 0 5px oklch(0.72 0.16 65 / .10),
+    0 0 18px oklch(0.72 0.16 65 / .48);
+}
+
+.loop__state-readout {
+  position: relative;
+  z-index: 4;
+  width: min(280px, 76%);
+  margin-top: .95rem;
+  padding: .72rem .85rem;
+  border: 1px solid oklch(0.52 0.18 268 / .20);
+  border-radius: 12px;
+  background: oklch(0.075 0.006 268 / .74);
+  box-shadow: inset 0 0 0 1px var(--glass-shine);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+
+.loop__state-label {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  margin-bottom: .55rem;
+}
+
+.loop__state-label span:last-child {
+  color: var(--accent);
+}
+
+.loop__state-track {
+  height: 4px;
+  border-radius: 999px;
+  background: oklch(0.93 0.005 268 / .08);
+  overflow: hidden;
+}
+
+.loop__state-fill {
+  display: block;
+  width: var(--loop-progress, 14%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  box-shadow: 0 0 16px oklch(0.52 0.18 268 / .44);
+  transition: width var(--dur-glass) var(--ease-out);
+}
+
+.loop__steps.is-pointing + .loop__indicator .loop__indicator-center {
+  border-color: oklch(0.52 0.18 268 / .42);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-shine),
+    inset 0 0 54px oklch(0.52 0.18 268 / .14),
+    0 24px 80px oklch(0 0 0 / .38),
+    0 0 54px oklch(0.52 0.18 268 / .14);
+}
+
+.loop__core-kicker {
+  font-size: .625rem;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.loop__core-title {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 1.6vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--ink-bright);
+  letter-spacing: -0.02em;
+}
+
+.loop__core-state {
+  min-height: 2.4em;
+  max-width: 16ch;
+  font-size: .6875rem;
+  line-height: 1.35;
+  color: var(--primary);
+  transition: color var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+
+.loop__lock-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .38rem;
+  max-width: 100%;
+  margin-top: .16rem;
+  padding: .34rem .48rem;
+  border-radius: 999px;
+  border: 1px solid oklch(0.72 0.16 65 / .24);
+  background:
+    linear-gradient(90deg, oklch(0.72 0.16 65 / .13), oklch(0.52 0.18 268 / .08)),
+    oklch(0.075 0.006 268 / .58);
+  color: oklch(0.82 0.13 65);
+  font-size: .56rem;
+  line-height: 1;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px oklch(0.93 0.005 268 / .04);
+}
+
+.loop__lock-icon {
+  position: relative;
+  width: .62rem;
+  height: .5rem;
+  flex: 0 0 auto;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: .9;
+}
+
+.loop__lock-icon::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -.34rem;
+  width: .46rem;
+  height: .4rem;
+  border: 1px solid currentColor;
+  border-bottom: 0;
+  border-radius: .32rem .32rem 0 0;
+  transform: translateX(-50%);
+}
+
+.loop__lock-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.loop__orbit-node {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .42rem .62rem .42rem .44rem;
+  border-radius: 999px;
+  border: 1px solid oklch(0.52 0.18 268 / .16);
+  background: oklch(0.095 0.006 268 / .70);
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: .6875rem;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px oklch(0.93 0.005 268 / .03);
+  transition: transform var(--dur-mid) var(--ease-out),
+              opacity var(--dur-mid) var(--ease-out),
+              color var(--dur-mid) var(--ease-out),
+              border-color var(--dur-mid) var(--ease-out),
+              background var(--dur-mid) var(--ease-out);
+}
+
+.loop__orbit-node::before {
+  content: '';
+  width: .46rem;
+  height: .46rem;
+  border-radius: 50%;
+  background: oklch(0.45 0.008 268);
+  box-shadow: 0 0 0 3px oklch(0.52 0.18 268 / .06);
+  transition: background var(--dur-mid) var(--ease-out), box-shadow var(--dur-mid) var(--ease-out);
+}
+
+.loop__orbit-node--active {
+  color: var(--ink-bright);
+  border-color: oklch(0.52 0.18 268 / .42);
+  background: oklch(0.52 0.18 268 / .14);
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.loop__orbit-node--active::before {
+  background: var(--primary);
+  box-shadow:
+    0 0 0 4px oklch(0.52 0.18 268 / .10),
+    0 0 18px oklch(0.52 0.18 268 / .68);
+}
+
+.loop__steps.is-pointing + .loop__indicator .loop__orbit-node:not(.loop__orbit-node--active) {
+  opacity: .42;
+}
+
+.loop__orbit-node:nth-of-type(1) { --x: 50%; --y: 5%; }
+.loop__orbit-node:nth-of-type(2) { --x: 86%; --y: 23%; }
+.loop__orbit-node:nth-of-type(3) { --x: 92%; --y: 58%; }
+.loop__orbit-node:nth-of-type(4) { --x: 68%; --y: 91%; }
+.loop__orbit-node:nth-of-type(5) { --x: 31%; --y: 91%; }
+.loop__orbit-node:nth-of-type(6) { --x: 8%; --y: 58%; }
+.loop__orbit-node:nth-of-type(7) { --x: 14%; --y: 23%; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .loop__ring--outer {
+    animation: loopOrbit 24s linear infinite;
+  }
+
+  .loop__ring--middle {
+    animation: loopOrbit 34s linear infinite reverse;
+  }
+
+  .loop__core-scan::after {
+    animation: loopCoreSweep 7s linear infinite;
+  }
+}
+
+@keyframes loopOrbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loopCoreSweep {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 980px) {
+  .loop__body { grid-template-columns: 1fr; }
+  .loop__indicator {
+    position: relative;
+    top: auto;
+    order: -1;
+    max-width: 360px;
+    margin: 0 auto 2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .loop__orbit-node {
+    padding: .34rem .48rem .34rem .36rem;
+    font-size: .625rem;
+  }
+
+  .loop__indicator-center {
+    min-width: 118px;
+    min-height: 118px;
+  }
+
+  .loop__lock-badge {
+    font-size: .5rem;
+    padding: .28rem .38rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════   SECTION: COVENANT — 承诺/不承诺   ═══════════════════════════════════════════════════*/
+.covenant {
+  position: relative;
+}
+
+.covenant__split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+}
+
+@media (max-width: 768px) {
+  .covenant__split { grid-template-columns: 1fr; }
+}
+
+.covenant__col {
+  padding: 2.5rem;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  box-shadow: inset 0 0 0 1px var(--glass-shine),
+              0 4px 24px oklch(0 0 0 / 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.covenant__col::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, oklch(0.52 0.18 268 / 0.3), transparent);
+}
+
+.covenant__col--promise {
+  background: oklch(0.52 0.18 268 / 0.08);
+  border-color: oklch(0.52 0.18 268 / 0.25);
+  box-shadow: inset 0 0 0 1px var(--glass-shine),
+              inset 0 0 60px oklch(0.52 0.18 268 / 0.04),
+              0 4px 24px oklch(0 0 0 / 0.2);
+}
+
+.covenant__col--refuse {
+  background: oklch(0.10 0.002 0 / 0.45);
+}
+
+.covenant__col-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.covenant__col-title-en {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.covenant__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.covenant__list li {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.covenant__list li::before {
+  content: '';
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 4px;
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+.covenant__col--refuse .covenant__list li::before {
+  background: oklch(0.35 0.05 0);
+  border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════════════════   SECTION: CTA
+   ═══════════════════════════════════════════════════*/
+.cta {
+  position: relative;
+  z-index: 2;
+  padding: 8rem 0 6rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+.cta__bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, oklch(0.52 0.18 268 / 0.15), oklch(0.72 0.16 65 / 0.05) 40%, transparent 70%);
+  pointer-events: none;
+}
+
+.cta__title {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.cta__title-en {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--primary);
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.cta__desc {
+  font-size: 1.0625rem;
+  color: var(--ink-muted);
+  max-width: 520px;
+  margin: 0 auto 2.5rem;
+  position: relative;
+}
+
+.cta__actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════   FOOTER
+   ═══════════════════════════════════════════════════*/
+.footer {
+  position: relative;
+  z-index: 2;
+  padding: 3rem 0;
+  border-top: 1px solid var(--border-faint);
+  background: var(--bg-deep);
+}
+
+.footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer__copy {
+  font-size: 0.8125rem;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+}
+
+.footer__links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer__links a {
+  font-size: 0.8125rem;
+  color: var(--ink-faint);
+  transition: color var(--dur-fast);
+}
+
+.footer__links a:hover { color: var(--ink-muted); }
+
+/* ═══════════════════════════════════════════════════   REDUCED MOTION
+   ═══════════════════════════════════════════════════*/
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ambient-blob { display: none; }
+  .hero__title-line span { transform: none; opacity: 1; }
+  .hero__subtitle, .hero__actions, .hero__claims { opacity: 1; }
+  .reveal { opacity: 1; transform: none; }
+  .world-stage__network,
+  .world-stage__field,
+  .world-stage__grid {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+  .world-state-field.is-switching::before,
+  .world-state-hud.is-switching::before {
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════   TOAST
+   ═══════════════════════════════════════════════════*/
+.nexus-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: oklch(0.16 0.008 268);
+  border: 1px solid oklch(0.52 0.18 268 / 0.3);
+  color: var(--ink);
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.4), 0 0 0 1px oklch(0.52 0.18 268 / 0.1);
+  pointer-events: none;
+}
+
+.nexus-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+</style>
+</head>
+<body>
+
+<!-- Scroll progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Mouse spotlight -->
+<div class="spotlight" id="spotlight" style="opacity:0"></div>
+
+<!-- Ambient background layers -->
+<div class="ambient-layer">
+  <div class="ambient-blob ambient-blob--1"></div>
+  <div class="ambient-blob ambient-blob--2"></div>
+  <div class="ambient-blob ambient-blob--3"></div>
+</div>
+<div class="grid-overlay"></div>
+<div class="world-state-field" aria-hidden="true"></div>
+<div class="world-stage" data-topology="entry" aria-hidden="true">
+  <div class="world-stage__field"></div>
+  <div class="world-stage__grid"></div>
+  <div class="world-stage__network">
+    <span class="world-stage__orbit"></span>
+    <span class="world-stage__link" style="--x: 18%; --y: 34%; --w: 36%; --r: 18deg;"></span>
+    <span class="world-stage__link" style="--x: 38%; --y: 48%; --w: 42%; --r: -10deg;"></span>
+    <span class="world-stage__link" style="--x: 24%; --y: 66%; --w: 50%; --r: -24deg;"></span>
+    <span class="world-stage__link" style="--x: 54%; --y: 30%; --w: 30%; --r: 38deg;"></span>
+    <span class="world-stage__node" style="--x: 18%; --y: 34%; --s: 8px;"></span>
+    <span class="world-stage__node" style="--x: 38%; --y: 48%; --s: 7px;"></span>
+    <span class="world-stage__node world-stage__node--core" style="--x: 58%; --y: 50%; --s: 11px;"></span>
+    <span class="world-stage__node" style="--x: 78%; --y: 38%; --s: 8px;"></span>
+    <span class="world-stage__node" style="--x: 70%; --y: 70%; --s: 6px;"></span>
+  </div>
+  <div class="world-stage__readout">
+    <span class="world-stage__readout-index">00 / 08</span>
+    <span class="world-stage__readout-title">入口世界</span>
+  </div>
+</div>
+
+<aside class="world-state-hud" aria-label="当前世界状态">
+  <div class="world-state-hud__rail"><span></span></div>
+  <div class="world-state-hud__index">00 / 08</div>
+  <div class="world-state-hud__panel">
+    <span class="world-state-hud__kicker">WORLD STATE</span>
+    <div class="world-state-hud__title">入口世界</div>
+    <div class="world-state-hud__desc">Nexus World</div>
+  </div>
+</aside>
+
+<!-- ═══ Navigation ══ -->
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="#" class="nav__logo">
+      <span class="nav__logo-mark">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="14" cy="14" r="12" stroke="oklch(0.52 0.18 268)" stroke-width="1.5" fill="none"/>
+          <circle cx="14" cy="14" r="3" fill="oklch(0.52 0.18 268)"/>
+          <circle cx="6" cy="8" r="1.5" fill="oklch(0.65 0.01 268)"/>
+          <circle cx="22" cy="20" r="1.5" fill="oklch(0.72 0.16 65)"/>
+          <line x1="6" y1="8" x2="14" y2="14" stroke="oklch(0.52 0.18 268 / 0.4)" stroke-width="1"/>
+          <line x1="14" y1="14" x2="22" y2="20" stroke="oklch(0.52 0.18 268 / 0.4)" stroke-width="1"/>
+        </svg>
+      </span>
+      Nexus
+    </a>
+    <div class="nav__links">
+      <a href="#problem">问题</a>
+      <a href="#what">产品</a>
+      <a href="#capabilities">能力</a>
+      <a href="#diff">差异</a>
+      <a href="#covenant">契约</a>
+    </div>
+    <a href="javascript:void(0)" class="nav__cta" onclick="nexusToast('早期访问申请已记录。我们会尽快与您联系。')">申请早期访问</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ══ -->
+<section class="hero" data-world-state="入口世界" data-world-state-desc="World entry" data-world-state-index="00" data-world-state-tone="268">
+  <div class="hero__visual">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero__world-panel" aria-hidden="true">
+      <div class="hero__world-kicker">WORLD STATE</div>
+      <div class="hero__world-row"><span>causal edges</span><div class="hero__world-track"><span style="--w: 78%"></span></div></div>
+      <div class="hero__world-row"><span>agent layer</span><div class="hero__world-track"><span style="--w: 64%"></span></div></div>
+      <div class="hero__world-row"><span>branching</span><div class="hero__world-track"><span style="--w: 86%"></span></div></div>
+    </div>
+  </div>
+  <div class="container hero__inner">
+    <div class="hero__eyebrow">
+      <span class="hero__eyebrow-dot"></span>
+      Causal Simulation Engine · 因果仿真引擎
+    </div>
+    <h1 class="hero__title">
+      <span class="hero__title-line"><span>与现实商业逻辑同构。</span></span>
+      <span class="hero__title-line"><span><span class="hero__title-accent">因果仿真</span>世界</span></span>
+      <span class="hero__title-line"><span style="font-size: 0.5em; font-weight: 400; color: var(--ink-muted);">A world that mirrors your business.</span></span>
+    </h1>
+    <p class="hero__subtitle">
+      输入一个商业问题，Nexus 帮你构建一个可审计的商业世界。<br>
+      推演不同决策，追踪因果链路，输出带可信边界的情况分布——<br>
+      不是单点答案，是可能性的全景。    </p>
+    <div class="hero__actions">
+      <a href="#cta" class="btn btn--primary">
+        申请早期访问        <svg class="btn__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#what" class="btn btn--ghost">查看机制说明</a>
+    </div>
+    <div class="hero__claims">
+      <div class="hero__claim">
+        <span class="hero__claim-en">Construct the world</span>
+        <span class="hero__claim-title">构建世界</span>
+        <span class="hero__claim-copy">输入不是 prompt，而是商业世界的初始条件。</span>
+      </div>
+      <div class="hero__claim">
+        <span class="hero__claim-en">Simulate branches</span>
+        <span class="hero__claim-title">推演分支</span>
+        <span class="hero__claim-copy">输出不是单点答案，而是可比较的未来路径。</span>
+      </div>
+      <div class="hero__claim">
+        <span class="hero__claim-en">Audit causality</span>
+        <span class="hero__claim-title">审计因果</span>
+        <span class="hero__claim-copy">每条路径都能回看变量、Agent、阈值事件与推演逻辑。</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROBLEM ══ -->
+<section class="section problem" id="problem" data-world-state="因果不可见" data-world-state-desc="Hidden causality" data-world-state-index="01" data-world-state-tone="286">
+  <div class="container">
+    <div class="section__header reveal">
+      <div class="section__label">因果不可见 / Hidden causality</div>
+      <h2 class="section__title">决策为什么难</h2>
+      <p class="section__desc">因为你看到的只是结果，看不见因果链路在暗处如何分叉。</p>
+    </div>
+    <div class="problem__grid reveal reveal--stagger">
+      <div class="problem__map">
+        <div class="problem__map-title">结果可见，因果不可见</div>
+        <div class="problem__hidden-layer" aria-hidden="true">
+          <svg viewBox="0 0 420 260" fill="none">
+            <path d="M48 204 C96 112 148 82 214 122 C280 164 326 120 382 44" stroke="oklch(0.52 0.18 268 / .20)" stroke-width="1.2" stroke-dasharray="5 8"/>
+            <path d="M74 58 C126 104 178 120 226 88 C274 56 314 82 358 138" stroke="oklch(0.72 0.16 65 / .18)" stroke-width="1.2" stroke-dasharray="3 7"/>
+            <path d="M116 216 C160 172 188 174 232 206 C272 236 310 214 348 178" stroke="oklch(0.93 0.005 268 / .12)" stroke-width="1"/>
+            <circle cx="48" cy="204" r="3" fill="oklch(0.52 0.18 268 / .55)"/>
+            <circle cx="214" cy="122" r="3.5" fill="oklch(0.72 0.16 65 / .58)"/>
+            <circle cx="382" cy="44" r="3" fill="oklch(0.52 0.18 268 / .55)"/>
+            <circle cx="358" cy="138" r="3" fill="oklch(0.72 0.16 65 / .52)"/>
+          </svg>
+        </div>
+        <div class="problem__fracture" aria-hidden="true">
+          <svg viewBox="0 0 420 260" fill="none">
+            <path d="M32 142 C96 70 148 72 210 130 C268 184 318 190 388 94" stroke="oklch(0.52 0.18 268 / .52)" stroke-width="2"/>
+            <path d="M32 170 C94 132 132 140 180 178 C226 214 260 206 316 156" stroke="oklch(0.72 0.16 65 / .42)" stroke-width="2" stroke-dasharray="7 7"/>
+            <path d="M122 82 L174 178 L236 86 L288 188" stroke="oklch(1 0 0 / .12)" stroke-width="1"/>
+            <circle cx="32" cy="142" r="5" fill="oklch(0.52 0.18 268)"/>
+            <circle cx="210" cy="130" r="6" fill="oklch(0.72 0.16 65)"/>
+            <circle cx="388" cy="94" r="5" fill="oklch(0.52 0.18 268)"/>
+            <circle cx="316" cy="156" r="5" fill="oklch(0.72 0.16 65)"/>
+          </svg>
+        </div>
+        <span class="problem__node"></span>
+        <span class="problem__node"></span>
+        <span class="problem__node"></span>
+        <span class="problem__node"></span>
+        <span class="problem__scanline" aria-hidden="true"></span>
+        <p class="problem__map-caption">传统工具给你一个结果，Nexus 要解决的是：结果背后的变量、主体、信息边界和因果链路为什么这样变化。</p>
+      </div>
+      <div class="problem__cards">
+      <div class="problem__card">
+        <svg class="problem__card-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M14 14l12 12M26 14L14 26" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <h3 class="problem__card-title">靠直觉拍板</h3>
+        <p class="problem__card-desc">CEO 在会议室里凭经验做决策，无法压力测试不同选择的连锁后果。</p>
+        <p class="problem__card-en">Decisions by gut feeling, no stress-testing.</p>
+      </div>
+      <div class="problem__card">
+        <svg class="problem__card-icon" viewBox="0 0 40 40" fill="none">
+          <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="8" y1="20" x2="32" y2="20" stroke="currentColor" stroke-width="1"/>
+          <line x1="20" y1="8" x2="20" y2="32" stroke="currentColor" stroke-width="1"/>
+        </svg>
+        <h3 class="problem__card-title">单一财务模型</h3>
+        <p class="problem__card-desc">改一个假设要重做整个模型，看不到可能性空间，只能看到一条预测线。</p>
+        <p class="problem__card-en">One model, one forecast, no possibility space.</p>
+      </div>
+      <div class="problem__card">
+        <svg class="problem__card-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="28" cy="28" r="3" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="28" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M15 12h10M28 15v10M15 14l11 12" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
+        </svg>
+        <h3 class="problem__card-title">看不到连锁反应</h3>
+        <p class="problem__card-desc">想到几个风险点，但无法追踪一个事件如何通过因果链传播到整个系统。</p>
+        <p class="problem__card-en">No causal propagation tracking.</p>
+      </div>
+      <div class="problem__card">
+        <svg class="problem__card-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M20 10v10l6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <h3 class="problem__card-title">事后归因偏差</h3>
+        <p class="problem__card-desc">复盘靠叙事构造因果关系，容易自我欺骗——"当时那个决策为什么导致那个结果？"</p>
+        <p class="problem__card-en">Hindsight bias in retrospection.</p>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHAT IS NEXUS — TRIAD ══ -->
+<section class="section triad" id="what" data-world-state="三要素锁定" data-world-state-desc="World contract" data-world-state-index="02" data-world-state-tone="258">
+  <div class="container">
+    <div class="section__header reveal">
+      <div class="section__label">世界契约 / World contract</div>
+      <h2 class="section__title">三个要素，构成一个世界</h2>
+      <p class="section__desc">Nexus 不是黑盒输入输出。它显式地构建一个商业世界——由三类基础对象驱动。</p>
+    </div>
+    <div class="triad__layout">
+      <div class="triad__visual reveal">
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="glow-indigo" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glow-amber" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <linearGradient id="edge-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="oklch(0.52 0.18 268)" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="oklch(0.72 0.16 65)" stop-opacity="0.3"/>
+            </linearGradient>
+          </defs>
+          <!-- Outer ring -->
+          <circle cx="200" cy="200" r="180" fill="none" stroke="oklch(0.22 0.008 268)" stroke-width="1" stroke-dasharray="3 6">
+            <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="60s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Triangle edges with gradient -->
+          <polygon points="200,60 340,280 60,280" fill="none" stroke="url(#edge-grad)" stroke-width="1.5" opacity="0.6">
+            <animate attributeName="opacity" values="0.4;0.7;0.4" dur="4s" repeatCount="indefinite"/>
+          </polygon>
+          <!-- Node glows -->
+          <circle cx="200" cy="60" r="20" fill="oklch(0.52 0.18 268 / 0.12)" filter="url(#glow-indigo)"/>
+          <circle cx="340" cy="280" r="20" fill="oklch(0.52 0.18 268 / 0.12)" filter="url(#glow-indigo)"/>
+          <circle cx="60" cy="280" r="20" fill="oklch(0.72 0.16 65 / 0.10)" filter="url(#glow-amber)"/>
+          <!-- Node cores -->
+          <circle cx="200" cy="60" r="7" fill="oklch(0.52 0.18 268)" filter="url(#glow-indigo)">
+            <animate attributeName="r" values="7;9;7" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="340" cy="280" r="7" fill="oklch(0.52 0.18 268)" filter="url(#glow-indigo)">
+            <animate attributeName="r" values="7;9;7" dur="3s" begin="1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="60" cy="280" r="7" fill="oklch(0.72 0.16 65)" filter="url(#glow-amber)">
+            <animate attributeName="r" values="7;9;7" dur="3s" begin="2s" repeatCount="indefinite"/>
+          </circle>
+          <!-- Animated pulse along edges -->
+          <circle r="2.5" fill="oklch(0.72 0.16 65)">
+            <animateMotion dur="4s" repeatCount="indefinite" path="M 200,60 L 340,280"/>
+          </circle>
+          <circle r="2.5" fill="oklch(0.52 0.18 268)">
+            <animateMotion dur="4s" begin="1.3s" repeatCount="indefinite" path="M 340,280 L 60,280"/>
+          </circle>
+          <circle r="2.5" fill="oklch(0.52 0.18 268)">
+            <animateMotion dur="4s" begin="2.6s" repeatCount="indefinite" path="M 60,280 L 200,60"/>
+          </circle>
+          <!-- Labels -->
+          <text x="200" y="38" text-anchor="middle" fill="oklch(0.93 0.005 268)" font-family="var(--font-mono)" font-size="11" letter-spacing="0.05em">World Model</text>
+          <text x="360" y="308" text-anchor="middle" fill="oklch(0.93 0.005 268)" font-family="var(--font-mono)" font-size="11" letter-spacing="0.05em">Agents</text>
+          <text x="40" y="308" text-anchor="middle" fill="oklch(0.93 0.005 268)" font-family="var(--font-mono)" font-size="11" letter-spacing="0.05em">Info Boundary</text>
+          <!-- Center hub -->
+          <circle cx="200" cy="207" r="32" fill="oklch(0.52 0.18 268 / 0.06)" stroke="oklch(0.52 0.18 268 / 0.25)" stroke-width="1"/>
+          <circle cx="200" cy="207" r="22" fill="none" stroke="oklch(0.52 0.18 268 / 0.15)" stroke-width="0.5" stroke-dasharray="2 3">
+            <animateTransform attributeName="transform" type="rotate" from="0 200 207" to="-360 200 207" dur="40s" repeatCount="indefinite"/>
+          </circle>
+          <text x="200" y="211" text-anchor="middle" fill="oklch(0.72 0.01 268)" font-family="var(--font-mono)" font-size="9" letter-spacing="0.1em">NEXUS</text>
+          <!-- Ambient particles -->
+          <circle cx="150" cy="150" r="1.5" fill="oklch(0.72 0.16 65)" opacity="0.6">
+            <animate attributeName="opacity" values="0.6;0.1;0.6" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="260" cy="180" r="1.5" fill="oklch(0.52 0.18 268)" opacity="0.4">
+            <animate attributeName="opacity" values="0.4;0.1;0.4" dur="4s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="220" cy="250" r="1.5" fill="oklch(0.72 0.16 65)" opacity="0.5">
+            <animate attributeName="opacity" values="0.5;0.1;0.5" dur="5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="170" cy="220" r="1" fill="oklch(0.52 0.18 268)" opacity="0.3">
+            <animate attributeName="opacity" values="0.3;0.05;0.3" dur="6s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="290" cy="220" r="1" fill="oklch(0.72 0.16 65)" opacity="0.3">
+            <animate attributeName="opacity" values="0.3;0.05;0.3" dur="4.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+      <div class="triad__elements reveal reveal--stagger">
+        <div class="triad__item">
+          <span class="triad__item-num">01</span>
+          <h3 class="triad__item-title">商业世界模型<span class="triad__item-title-en">World Model</span></h3>
+          <p class="triad__item-desc">现金、成本、收入、库存、产能——每一个可计算的量都有名字、有来源、有计算方式。加上守恒律：钱不会凭空消失，产能不会凭空出现。你看见舞台本身，而不是只看见演出结果。</p>
+        </div>
+        <div class="triad__item">
+          <span class="triad__item-num">02</span>
+          <h3 class="triad__item-title">主体行为<span class="triad__item-title-en">Agent Behavior</span></h3>
+          <p class="triad__item-desc">消费者、竞争对手、供应商、监管者——每个主体都有可审查的画像：目标是什么、预算约束在哪、决策规则是什么。不是 AI 自由角色扮演，是规则约束下的可审计行为。</p>
+        </div>
+        <div class="triad__item">
+          <span class="triad__item-num">03</span>
+          <h3 class="triad__item-title">信息边界<span class="triad__item-title-en">Information Boundary</span></h3>
+          <p class="triad__item-desc">消费者不知道企业真实成本，竞争对手不知道你的现金压力，供应商不知道你未来订单是否稳定。每个主体只能基于自己看得见的信息行动——没有上帝视角，和真实商业世界一样。这是 Nexus 的灵魂差异点。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ OUTPUT SHAPE ══ -->
+<section class="section output" id="output" data-world-state="概率输出" data-world-state-desc="Distribution layer" data-world-state-index="03" data-world-state-tone="65">
+  <div class="container">
+    <div class="section__header reveal">
+      <div class="section__label">概率分布 / Distribution layer</div>
+      <h2 class="section__title">最后不是答案，是一组可审计的可能性</h2>
+      <p class="section__desc">Nexus 的输出不是一句建议，而是概率分布、可信边界和可追溯路径共同构成的决策视图。</p>
+    </div>
+      <div class="output__stage reveal reveal--stagger">
+      <div class="output__viz">
+        <div class="output__tag">Monte Carlo / causal audit</div>
+        <svg viewBox="0 0 720 520" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="outputLineGradient" x1="82" y1="376" x2="642" y2="132" gradientUnits="userSpaceOnUse">
+              <stop stop-color="oklch(0.52 0.18 268)" stop-opacity=".96"/>
+              <stop offset=".48" stop-color="oklch(0.72 0.16 65)" stop-opacity=".94"/>
+              <stop offset="1" stop-color="oklch(0.58 0.16 268)" stop-opacity=".78"/>
+            </linearGradient>
+            <linearGradient id="outputAreaFill" x1="0" y1="118" x2="0" y2="416" gradientUnits="userSpaceOnUse">
+              <stop stop-color="oklch(0.72 0.16 65)" stop-opacity=".20"/>
+              <stop offset=".46" stop-color="oklch(0.52 0.18 268)" stop-opacity=".18"/>
+              <stop offset="1" stop-color="oklch(0.52 0.18 268)" stop-opacity="0"/>
+            </linearGradient>
+            <filter id="outputLineGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="7" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="outputNodeGlow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <g class="output__viz-grid">
+            <line x1="72" y1="94" x2="72" y2="414"/>
+            <line x1="164" y1="94" x2="164" y2="414"/>
+            <line x1="256" y1="94" x2="256" y2="414"/>
+            <line x1="348" y1="94" x2="348" y2="414"/>
+            <line x1="440" y1="94" x2="440" y2="414"/>
+            <line x1="532" y1="94" x2="532" y2="414"/>
+            <line x1="624" y1="94" x2="624" y2="414"/>
+            <line x1="72" y1="414" x2="650" y2="414" class="output__viz-grid--strong"/>
+            <line x1="72" y1="334" x2="650" y2="334"/>
+            <line x1="72" y1="254" x2="650" y2="254"/>
+            <line x1="72" y1="174" x2="650" y2="174"/>
+            <line x1="72" y1="94" x2="650" y2="94"/>
+          </g>
+          <rect class="output__range" x="252" y="98" width="274" height="316" rx="18"/>
+          <g>
+            <line class="output__range-line" x1="252" y1="98" x2="252" y2="432"/>
+            <line class="output__range-line" x1="386" y1="98" x2="386" y2="432"/>
+            <line class="output__range-line" x1="526" y1="98" x2="526" y2="432"/>
+            <text class="output__range-label" x="238" y="88">P10</text>
+            <text class="output__range-label" x="372" y="88">P50</text>
+            <text class="output__range-label" x="512" y="88">P90</text>
+          </g>
+          <g class="output__histogram">
+            <rect x="96" y="386" width="22" height="28" rx="4"/>
+            <rect x="130" y="364" width="22" height="50" rx="4"/>
+            <rect x="164" y="338" width="22" height="76" rx="4"/>
+            <rect x="198" y="308" width="22" height="106" rx="4"/>
+            <rect x="232" y="282" width="22" height="132" rx="4"/>
+            <rect x="266" y="238" width="22" height="176" rx="4"/>
+            <rect x="300" y="208" width="22" height="206" rx="4"/>
+            <rect x="334" y="188" width="22" height="226" rx="4"/>
+            <rect x="368" y="166" width="22" height="248" rx="4"/>
+            <rect x="402" y="184" width="22" height="230" rx="4"/>
+            <rect x="436" y="214" width="22" height="200" rx="4"/>
+            <rect x="470" y="250" width="22" height="164" rx="4"/>
+            <rect x="504" y="292" width="22" height="122" rx="4"/>
+            <rect x="538" y="332" width="22" height="82" rx="4"/>
+            <rect x="572" y="366" width="22" height="48" rx="4"/>
+          </g>
+          <path class="output__area" d="M78 376 C136 360 164 314 214 292 C260 272 296 314 340 252 C392 178 438 128 506 160 C576 194 616 252 650 286 L650 414 L78 414 Z"/>
+          <path class="output__trace output__trace--upper" d="M82 338 C144 322 176 278 228 286 C286 296 326 316 374 260 C426 202 490 186 558 214 C610 236 640 292 654 326"/>
+          <path class="output__trace output__trace--lower" d="M86 404 C154 392 200 354 260 328 C318 302 354 302 406 232 C456 164 514 116 582 154 C628 178 648 238 658 260"/>
+          <path class="output__trace output__trace--main" d="M78 376 C136 360 164 314 214 292 C260 272 296 314 340 252 C392 178 438 128 506 160 C576 194 616 252 650 286"/>
+          <path class="output__branch" d="M340 252 C376 316 452 330 524 288"/>
+          <path class="output__branch" d="M340 252 C392 220 448 226 506 160"/>
+          <g>
+            <circle class="output__node-ring" cx="214" cy="292" r="17" stroke="oklch(0.52 0.18 268 / .55)"/>
+            <circle class="output__node" cx="214" cy="292" r="6" fill="oklch(0.52 0.18 268)"/>
+            <circle class="output__node-ring" cx="340" cy="252" r="19" stroke="oklch(0.72 0.16 65 / .60)"/>
+            <circle class="output__node" cx="340" cy="252" r="6.5" fill="oklch(0.72 0.16 65)"/>
+            <circle class="output__node-ring" cx="506" cy="160" r="18" stroke="oklch(0.52 0.18 268 / .55)"/>
+            <circle class="output__node" cx="506" cy="160" r="6" fill="oklch(0.52 0.18 268)"/>
+          </g>
+          <g>
+            <rect class="output__label-box output__label-box--warm" x="548" y="108" width="124" height="48" rx="14"/>
+            <text class="output__svg-title" x="562" y="131">可信边界</text>
+            <text class="output__svg-mono" x="562" y="148">confidence band</text>
+            <line x1="548" y1="156" x2="386" y2="252" stroke="oklch(0.72 0.16 65 / .34)" stroke-dasharray="4 5"/>
+          </g>
+          <g transform="translate(94 136)">
+            <rect class="output__label-box" width="174" height="78" rx="14"/>
+            <text class="output__svg-title" x="16" y="27">路径分支</text>
+            <text class="output__svg-mono" x="16" y="51">trigger: price shock</text>
+            <text class="output__svg-mono" x="16" y="67">ledger: 18 events</text>
+          </g>
+          <g>
+            <text class="output__axis-label" x="72" y="446">lower outcome</text>
+            <text class="output__axis-label output__axis-label--mobile-hide" x="86" y="82">probability</text>
+          </g>
+        </svg>
+        <div class="output__readout">
+          <div class="output__readout-title">Simulation result <span>LIVE RUN</span></div>
+          <div class="output__readout-grid">
+            <div class="output__metric"><strong>0.62</strong><span>P50 result</span></div>
+            <div class="output__metric"><strong>82%</strong><span>in boundary</span></div>
+            <div class="output__metric"><strong>4</strong><span>branches</span></div>
+          </div>
+          <div class="output__readout-bars" aria-hidden="true">
+            <div class="output__readout-row"><span>Base</span><div class="output__readout-track"><span class="output__readout-fill" style="width: 82%"></span></div><span>82%</span></div>
+            <div class="output__readout-row"><span>Upside</span><div class="output__readout-track"><span class="output__readout-fill" style="width: 61%"></span></div><span>61%</span></div>
+            <div class="output__readout-row"><span>Shock</span><div class="output__readout-track"><span class="output__readout-fill" style="width: 28%"></span></div><span>28%</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="output__cards">
+        <div class="output__card">
+          <div class="output__card-kicker">01 / Distribution</div>
+          <h3 class="output__card-title">不是单点预测，是结果分布</h3>
+          <p class="output__card-desc">同一个商业问题会产生多条可能路径。前台聚合成概率分布，保留关键分支，而不是只给一个看似确定的数字。</p>
+        </div>
+        <div class="output__card">
+          <div class="output__card-kicker">02 / Boundary</div>
+          <h3 class="output__card-title">可信边界直接暴露</h3>
+          <p class="output__card-desc">哪里算得清、哪里估得出、哪里算不清，会被明确标注。缺数据不伪造精确值。</p>
+        </div>
+        <div class="output__card">
+          <div class="output__card-kicker">03 / Ledger</div>
+          <h3 class="output__card-title">每条路径都能追到账本</h3>
+          <p class="output__card-desc">你可以展开任一关键路径，看到变量、主体、因果边和事件如何共同把结果推到这里。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ EIGHT CAPABILITIES — BENTO ══ -->
+<section class="section capabilities" id="capabilities" data-world-state="能力模型" data-world-state-desc="Model layer" data-world-state-index="04" data-world-state-tone="210">
+  <div class="container">
+    <div class="section__header reveal">
+      <div class="section__label">能力层 / Model layer</div>
+      <h2 class="section__title">八种能力，一个闭环</h2>
+      <p class="section__desc">从看见世界到修改世界——每一轮推演都比上一轮更精确。</p>
+    </div>
+    <div class="bento reveal reveal--stagger">
+      <!-- 1. World Model —large -->
+      <div class="bento__cell bento__cell--large bento__cell--model">
+        <div class="bento__cell-glow"></div>
+        <div class="bento__cell-num">01</div>
+        <h3 class="bento__cell-title">世界模型</h3>
+        <div class="bento__cell-title-en">World Model</div>
+        <p class="bento__cell-desc">不是黑盒输入输出，而是显式的商业世界模型。每一个变量都有名字、有来源、有计算方式。你看见舞台本身，而不是只看见演出结果。</p>
+        <svg class="bento__visual" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="oklch(0.52 0.18 268 / 0.3)" fill="none" stroke-width="1">
+            <circle cx="50" cy="100" r="4" fill="oklch(0.52 0.18 268 / 0.6)"/>
+            <circle cx="150" cy="60" r="4" fill="oklch(0.52 0.18 268 / 0.6)"/>
+            <circle cx="150" cy="140" r="4" fill="oklch(0.52 0.18 268 / 0.6)"/>
+            <circle cx="250" cy="100" r="4" fill="oklch(0.72 0.16 65 / 0.6)"/>
+            <circle cx="350" cy="60" r="4" fill="oklch(0.52 0.18 268 / 0.6)"/>
+            <circle cx="350" cy="140" r="4" fill="oklch(0.52 0.18 268 / 0.6)"/>
+            <line x1="54" y1="100" x2="146" y2="60"/>
+            <line x1="54" y1="100" x2="146" y2="140"/>
+            <line x1="154" y1="60" x2="246" y2="100"/>
+            <line x1="154" y1="140" x2="246" y2="100"/>
+            <line x1="254" y1="100" x2="346" y2="60"/>
+            <line x1="254" y1="100" x2="346" y2="140"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- 2. Agent Model -->
+      <div class="bento__cell bento__cell--model">
+        <div class="bento__cell-glow"></div>
+        <div class="bento__cell-num">02</div>
+        <h3 class="bento__cell-title">主体模型</h3>
+        <div class="bento__cell-title-en">Agent Model</div>
+        <p class="bento__cell-desc">每个参与者是谁、想要什么、怎么动——可审查，可追溯。</p>
+        <svg class="bento__mini-icon" viewBox="0 0 48 48" fill="none">
+          <circle cx="14" cy="16" r="5" stroke="oklch(0.52 0.18 268 / 0.5)" stroke-width="1.2"/>
+          <circle cx="34" cy="16" r="5" stroke="oklch(0.72 0.16 65 / 0.5)" stroke-width="1.2"/>
+          <circle cx="24" cy="34" r="5" stroke="oklch(0.52 0.18 268 / 0.5)" stroke-width="1.2"/>
+          <path d="M18 18l6 12M30 18l-6 12M19 16h10" stroke="oklch(0.52 0.18 268 / 0.25)" stroke-width="0.8" stroke-dasharray="2 2"/>
+        </svg>
+      </div>
+
+      <!-- 3. Info Model -->
+      <div class="bento__cell">
+        <div class="bento__cell-glow"></div>
+        <div class="bento__cell-num">03</div>
+        <h3 class="bento__cell-title">信息模型</h3>
+        <div class="bento__cell-title-en">Information Model</div>
+        <p class="bento__cell-desc">谁知道什么、谁不知道什么。灵魂差异点。</p>
+        <svg class="bento__mini-icon" viewBox="0 0 48 48" fill="none">
+          <rect x="8" y="10" width="14" height="14" rx="2" stroke="oklch(0.52 0.18 268 / 0.4)" stroke-width="1.2" fill="oklch(0.52 0.18 268 / 0.05)"/>
+          <rect x="26" y="10" width="14" height="14" rx="2" stroke="oklch(0.72 0.16 65 / 0.4)" stroke-width="1.2" fill="oklch(0.72 0.16 65 / 0.05)"/>
+          <rect x="17" y="28" width="14" height="14" rx="2" stroke="oklch(0.52 0.18 268 / 0.4)" stroke-width="1.2" fill="oklch(0.52 0.18 268 / 0.05)"/>
+          <line x1="22" y1="17" x2="33" y2="17" stroke="oklch(0.45 0.008 268)" stroke-width="0.8" stroke-dasharray="1.5 1.5"/>
+          <line x1="24" y1="24" x2="24" y2="28" stroke="oklch(0.45 0.008 268)" stroke-width="0.8" stroke-dasharray="1.5 1.5"/>
+        </svg>
+      </div>
+
+      <!-- 4. Causal Mechanism —wide -->
+      <div class="bento__cell bento__cell--wide">
+        <div class="bento__cell-glow"></div>
+        <div class="bento__cell-num">04</div>
+        <h3 class="bento__cell-title">因果机制模型</h3>
+        <div class="bento__cell-title-en">Causal Mechanism</div>
+        <p class="bento__cell-desc">因果不是藏在 AI 脑子里，是显式的边——方向、强度、延迟、失效条件全部可查。你觉得某条因果不合理？改它。改完立刻看到影响。</p>
+        <svg class="bento__visual-inline" viewBox="0 0 300 60" xmlns="http://www.w3.org/2000/svg" style="margin-top:1rem;width:100%;max-width:300px;opacity:0.5;">
+          <circle cx="20" cy="30" r="5" fill="oklch(0.52 0.18 268 / 0.6)"/>
+          <text x="20" y="48" text-anchor="middle" fill="oklch(0.45 0.008 268)" font-size="7" font-family="var(--font-mono)">价格</text>
+          <path d="M28 28 L72 28" stroke="oklch(0.52 0.18 268 / 0.4)" stroke-width="1.2" marker-end="url(#arrow1)"/>
+          <text x="50" y="22" text-anchor="middle" fill="oklch(0.45 0.008 268)" font-size="6" font-family="var(--font-mono)">-0.8</text>
+          <circle cx="80" cy="30" r="5" fill="oklch(0.72 0.16 65 / 0.6)"/>
+          <text x="80" y="48" text-anchor="middle" fill="oklch(0.45 0.008 268)" font-size="7" font-family="var(--font-mono)">销量</text>
+          <path d="M88 28 L152 28" stroke="oklch(0.52 0.18 268 / 0.4)" stroke-width="1.2" marker-end="url(#arrow1)"/>
+          <text x="120" y="22" text-anchor="middle" fill="oklch(0.45 0.008 268)" font-size="6" font-family="var(--font-mono)">+0.6</text>
+          <circle cx="160" cy="30" r="5" fill="oklch(0.52 0.18 268 / 0.6)"/>
+          <text x="160" y="48" text-anchor="middle" fill="oklch(0.45 0.008 268)" font-size="7" font-family="var(--font-mono)">收入</text>
+          <path d="M168 28 L222 28" stroke="oklch(0.52 0.18 268 / 0.4)" stroke-width="1.2" marker-end="url(#arrow1)" stroke-dasharray="3 2"/>
+          <text x="195" y="22" text-anchor="middle" fill="oklch(0.45 0.008 268)" font-size="6" font-family="var(--font-mono)">delay 2q</text>
+          <circle cx="230" cy="30" r="5" fill="oklch(0.52 0.18 268 / 0.4)" stroke="oklch(0.45 0.008 268)" stroke-width="0.8" stroke-dasharray="2 1.5"/>
+          <text x="230" y="48" text-anchor="middle" fill="oklch(0.45 0.008 268)" font-size="7" font-family="var(--font-mono)">产能</text>
+          <defs><marker id="arrow1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L5 3 L0 6" fill="oklch(0.52 0.18 268 / 0.4)"/></marker></defs>
+        </svg>
+      </div>
+
+      <!-- 5. Event Model -->
+      <div class="bento__cell">
+        <div class="bento__cell-glow"></div>
+        <div class="bento__cell-num">05</div>
+        <h3 class="bento__cell-title">事件模型</h3>
+        <div class="bento__cell-title-en">Event Model</div>
+        <p class="bento__cell-desc">离散事件不是噪声，是建模对象。追踪哪个事件改变了结果。</p>
+        <svg class="bento__mini-icon" viewBox="0 0 48 48" fill="none">
+          <line x1="6" y1="24" x2="42" y2="24" stroke="oklch(0.52 0.18 268 / 0.3)" stroke-width="1"/>
+          <circle cx="12" cy="24" r="3" fill="oklch(0.52 0.18 268 / 0.6)"/>
+          <circle cx="24" cy="24" r="3" fill="oklch(0.72 0.16 65 / 0.6)"/>
+          <circle cx="36" cy="24" r="3" fill="oklch(0.52 0.18 268 / 0.6)"/>
+          <path d="M12 21v-6M24 21v-10M36 21v-4" stroke="oklch(0.52 0.18 268 / 0.3)" stroke-width="0.8" stroke-dasharray="1.5 1.5"/>
+          <path d="M12 27v6M24 27v10M36 27v4" stroke="oklch(0.52 0.18 268 / 0.3)" stroke-width="0.8" stroke-dasharray="1.5 1.5"/>
+        </svg>
+      </div>
+
+      <!-- 6. Uncertainty & Scenarios -->
+      <div class="bento__cell bento__cell--model">
+        <div class="bento__cell-glow"></div>
+        <div class="bento__cell-num">06</div>
+        <h3 class="bento__cell-title">不确定性与情景</h3>
+        <div class="bento__cell-title-en">Uncertainty & Scenarios</div>
+        <p class="bento__cell-desc">不是一个答案，是一组可能情况的分布。</p>
+        <svg class="bento__mini-icon" viewBox="0 0 48 48" fill="none">
+          <path d="M6 36 Q12 36 14 28 T20 20 T28 16 T36 22 T42 30" stroke="oklch(0.52 0.18 268 / 0.5)" stroke-width="1.2" fill="none"/>
+          <path d="M6 40 Q12 40 14 34 T20 28 T28 26 T36 30 T42 34" stroke="oklch(0.52 0.18 268 / 0.25)" stroke-width="1" fill="none" stroke-dasharray="2 2"/>
+          <path d="M6 32 Q12 32 14 22 T20 12 T28 6 T36 14 T42 24" stroke="oklch(0.72 0.16 65 / 0.25)" stroke-width="1" fill="none" stroke-dasharray="2 2"/>
+          <rect x="4" y="4" width="40" height="40" stroke="oklch(0.18 0.005 268 / 0.4)" stroke-width="0.5" fill="none" rx="3"/>
+        </svg>
+      </div>
+
+      <!-- 7. Ledger Audit -->
+      <div class="bento__cell">
+        <div class="bento__cell-glow"></div>
+        <div class="bento__cell-num">07</div>
+        <h3 class="bento__cell-title">账本审计</h3>
+        <div class="bento__cell-title-en">Ledger Audit</div>
+        <p class="bento__cell-desc">每一个值追到源头。工作台不是仪表盘，是机制显微镜。</p>
+        <svg class="bento__mini-icon" viewBox="0 0 48 48" fill="none">
+          <rect x="8" y="8" width="32" height="32" rx="2" stroke="oklch(0.52 0.18 268 / 0.4)" stroke-width="1.2"/>
+          <line x1="8" y1="16" x2="40" y2="16" stroke="oklch(0.52 0.18 268 / 0.3)" stroke-width="0.8"/>
+          <line x1="8" y1="24" x2="40" y2="24" stroke="oklch(0.52 0.18 268 / 0.2)" stroke-width="0.6"/>
+          <line x1="8" y1="32" x2="40" y2="32" stroke="oklch(0.52 0.18 268 / 0.2)" stroke-width="0.6"/>
+          <circle cx="14" cy="20" r="1.5" fill="oklch(0.72 0.16 65 / 0.7)"/>
+          <circle cx="14" cy="28" r="1.5" fill="oklch(0.52 0.18 268 / 0.7)"/>
+          <circle cx="14" cy="36" r="1.5" fill="oklch(0.52 0.18 268 / 0.7)"/>
+          <path d="M14 20 L28 28" stroke="oklch(0.72 0.16 65 / 0.3)" stroke-width="0.6" stroke-dasharray="1 1"/>
+        </svg>
+      </div>
+
+      <!-- 8. Calibration & Quality -->
+      <div class="bento__cell bento__cell--model">
+        <div class="bento__cell-glow"></div>
+        <div class="bento__cell-num">08</div>
+        <h3 class="bento__cell-title">校准与质量</h3>
+        <div class="bento__cell-title-en">Calibration & Quality</div>
+        <p class="bento__cell-desc">概率分布带可信边界。哪里算得清、哪里算不清——诚实标注。</p>
+        <svg class="bento__mini-icon" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="16" stroke="oklch(0.52 0.18 268 / 0.3)" stroke-width="1" fill="none"/>
+          <path d="M24 8 A16 16 0 0 1 40 24" stroke="oklch(0.52 0.18 268)" stroke-width="2" fill="none"/>
+          <path d="M40 24 A16 16 0 0 1 24 40" stroke="oklch(0.72 0.16 65)" stroke-width="2" fill="none"/>
+          <path d="M24 40 A16 16 0 0 1 8 24" stroke="oklch(0.45 0.008 268)" stroke-width="2" fill="none" stroke-dasharray="3 2"/>
+          <path d="M8 24 A16 16 0 0 1 24 8" stroke="oklch(0.45 0.008 268)" stroke-width="2" fill="none" stroke-dasharray="3 2"/>
+          <circle cx="24" cy="24" r="3" fill="oklch(0.93 0.005 268)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DIFFERENTIATION ══ -->
+<section class="section diff" id="diff" data-world-state="边界对比" data-world-state-desc="Boundary check" data-world-state-index="05" data-world-state-tone="188">
+  <div class="container">
+    <div class="section__header reveal">
+      <div class="section__label">边界对比 / Boundary check</div>
+      <h2 class="section__title">Nexus 不是什么</h2>
+      <p class="section__desc">边界比功能更重要。搞清楚 Nexus 和你熟悉的工具之间的根本差异。</p>
+    </div>
+    <div class="reveal diff__table-wrap" style="overflow-x: auto;">
+      <table class="diff__table">
+        <thead>
+          <tr>
+            <th>维度 / Dimension</th>
+            <th>Nexus</th>
+            <th>AI 顾问 / AI Advisor</th>
+            <th>BI 仪表盘 / BI Dashboard</th>
+            <th>涌现式群体智能 / Swarm Sim</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="diff__name">决策方式</span><br><span class="diff__label">Decision approach</span></td>
+            <td class="diff__nexus" data-label="Nexus">规则运行，账本记录，AI 只提示。</td>
+            <td class="diff__other" data-label="AI 顾问">AI 直接给建议/结论</td>
+            <td class="diff__other" data-label="BI 仪表盘">展示历史指标，回答过去。</td>
+            <td class="diff__other" data-label="涌现式群体智能">Agent 自由交互，观察涌现。</td>
+          </tr>
+          <tr>
+            <td><span class="diff__name">因果机制</span><br><span class="diff__label">Causal mechanism</span></td>
+            <td class="diff__nexus" data-label="Nexus">显式因果边：方向/强度/延迟/失效</td>
+            <td class="diff__other" data-label="AI 顾问">隐含在 AI 推理中。</td>
+            <td class="diff__other" data-label="BI 仪表盘">统计相关性，无机制。</td>
+            <td class="diff__other" data-label="涌现式群体智能">黑盒涌现，无显式因果</td>
+          </tr>
+          <tr>
+            <td><span class="diff__name">信息边界</span><br><span class="diff__label">Information boundary</span></td>
+            <td class="diff__nexus" data-label="Nexus">主体只能基于可见信息行动</td>
+            <td class="diff__other" data-label="AI 顾问">AI 有全局视角</td>
+            <td class="diff__other" data-label="BI 仪表盘">分析师决定看什么。</td>
+            <td class="diff__other" data-label="涌现式群体智能">Agent 有记忆但无边界约束。</td>
+          </tr>
+          <tr>
+            <td><span class="diff__name">审计</span><br><span class="diff__label">Audit trail</span></td>
+            <td class="diff__nexus" data-label="Nexus">每个结果追到变量/主体/因果/事件</td>
+            <td class="diff__other" data-label="AI 顾问">依赖 AI 解释，不可追溯。</td>
+            <td class="diff__other" data-label="BI 仪表盘">数据管线可追，逻辑不可查。</td>
+            <td class="diff__other" data-label="涌现式群体智能">群体行为可观察，不可审计</td>
+          </tr>
+          <tr>
+            <td><span class="diff__name">不确定性</span><br><span class="diff__label">Uncertainty</span></td>
+            <td class="diff__nexus" data-label="Nexus">概率分布 + 可信边界标注</td>
+            <td class="diff__other" data-label="AI 顾问">给确定性结论或概率估计</td>
+            <td class="diff__other" data-label="BI 仪表盘">单一数字预测</td>
+            <td class="diff__other" data-label="涌现式群体智能">群体分布，无可信边界</td>
+          </tr>
+          <tr>
+            <td><span class="diff__name">可修改性</span><br><span class="diff__label">Modifiability</span></td>
+            <td class="diff__nexus" data-label="Nexus">改一个假设立刻看到影响。</td>
+            <td class="diff__other" data-label="AI 顾问">重新提问，从头开始。</td>
+            <td class="diff__other" data-label="BI 仪表盘">改模型要重做</td>
+            <td class="diff__other" data-label="涌现式群体智能">调参数重跑，无假设层</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SEVEN-STEP LOOP ══ -->
+<section class="section loop" id="loop" data-world-state="闭环推进" data-world-state-desc="Causal loop" data-world-state-index="06" data-world-state-tone="268">
+  <div class="container">
+    <div class="section__header reveal">
+      <div class="section__label">闭环推进 / Causal loop</div>
+      <h2 class="section__title">七步闭环</h2>
+      <p class="section__desc">从输入到反哺，每一轮推演都比上一轮更接近真实。</p>
+    </div>
+    <div class="loop__body">
+      <div class="loop__steps reveal reveal--stagger">
+      <div class="loop__step" data-loop-state="Seed / Boundary" data-loop-lock="Boundary Open">
+        <div class="loop__step-num">01</div>
+        <div>
+          <h3 class="loop__step-title">输入<span class="loop__step-title-en">Input</span></h3>
+        </div>
+        <p class="loop__step-desc">用户输入商业问题、选择 preset、定六个边界——建模目标、市场边界、分析单元、时间颗粒度、输出指标、基准状态。系统拆解出 Seed + 建议激活的世界层面。</p>
+      </div>
+      <div class="loop__step" data-loop-state="World Contract" data-loop-lock="Draft World Model">
+        <div class="loop__step-num">02</div>
+        <div>
+          <h3 class="loop__step-title">确认<span class="loop__step-title-en">Confirm</span></h3>
+        </div>
+        <p class="loop__step-desc">审查世界合同——变量、主体、信息边界、因果、事件、假设。能改任何一项。锁定 Draft World Model。</p>
+      </div>
+      <div class="loop__step" data-loop-state="Frozen Rules" data-loop-lock="Rules Locked">
+        <div class="loop__step-num">03</div>
+        <div>
+          <h3 class="loop__step-title">启动<span class="loop__step-title-en">Launch</span></h3>
+        </div>
+        <p class="loop__step-desc">点击启动，系统冻结本轮世界合同，进入推演。冻结意味着规则已定，推演过程不受干预。</p>
+      </div>
+      <div class="loop__step" data-loop-state="Causal Runtime" data-loop-lock="Run Sealed">
+        <div class="loop__step-num">04</div>
+        <div>
+          <h3 class="loop__step-title">推演<span class="loop__step-title-en">Simulation</span></h3>
+        </div>
+        <p class="loop__step-desc">世界按机制按时间步运行，用户可追加决策生成平行世界。每步写账本——谁做了什么、哪条因果边触发、哪个事件介入。</p>
+      </div>
+      <div class="loop__step" data-loop-state="Mechanism Lens" data-loop-lock="Audit Lens">
+        <div class="loop__step-num">05</div>
+        <div>
+          <h3 class="loop__step-title">工作台<span class="loop__step-title-en">Workbench</span></h3>
+        </div>
+        <p class="loop__step-desc">在机制显微镜下查看——这个月为什么变了、哪个主体做了什么、哪条因果边影响最大。不是漂亮仪表盘，是可追溯的机制视图。</p>
+      </div>
+      <div class="loop__step" data-loop-state="Confidence Boundary" data-loop-lock="Confidence Gate">
+        <div class="loop__step-num">06</div>
+        <div>
+          <h3 class="loop__step-title">质量评估<span class="loop__step-title-en">Quality</span></h3>
+        </div>
+        <p class="loop__step-desc">系统给出可信边界评价——哪里算得清、哪里估得出、哪里算不清、哪里失效。缺数据不伪造精确值。</p>
+      </div>
+      <div class="loop__step" data-loop-state="Model Feedback" data-loop-lock="Next Model Draft">
+        <div class="loop__step-num">07</div>
+        <div>
+          <h3 class="loop__step-title">反哺<span class="loop__step-title-en">Feedback</span></h3>
+        </div>
+        <p class="loop__step-desc">回到确认页改世界模型，开新一轮 Run，对比前后变化。闭环回到第 2 步——商业问题和边界不变，只改世界模型。</p>
+      </div>
+      </div>
+      <aside class="loop__indicator" aria-label="Nexus simulation loop state">
+        <div class="loop__core-shell">
+          <div class="loop__core-scan" aria-hidden="true"></div>
+          <div class="loop__ring loop__ring--outer"></div>
+          <div class="loop__ring loop__ring--middle"></div>
+          <div class="loop__ring loop__ring--inner"></div>
+          <div class="loop__axis"></div>
+          <div class="loop__indicator-center">
+            <span class="loop__core-kicker">Nexus</span>
+            <span class="loop__core-title">Simulation Core</span>
+            <span class="loop__core-state">World Model</span>
+            <span class="loop__lock-badge"><span class="loop__lock-icon" aria-hidden="true"></span><span class="loop__lock-text">WORLD MODEL LOCKED</span></span>
+          </div>
+          <span class="loop__orbit-node" data-step="0">输入</span>
+          <span class="loop__orbit-node" data-step="1">确认</span>
+          <span class="loop__orbit-node" data-step="2">启动</span>
+          <span class="loop__orbit-node" data-step="3">推演</span>
+          <span class="loop__orbit-node" data-step="4">审计</span>
+          <span class="loop__orbit-node" data-step="5">评估</span>
+          <span class="loop__orbit-node" data-step="6">反哺</span>
+        </div>
+        <div class="loop__state-readout" aria-hidden="true">
+          <div class="loop__state-label"><span>state progress</span><span class="loop__state-index">01 / 07</span></div>
+          <div class="loop__state-track"><span class="loop__state-fill"></span></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COVENANT ══ -->
+<section class="section covenant" id="covenant" data-world-state="机制宪法" data-world-state-desc="Mechanism covenant" data-world-state-index="07" data-world-state-tone="238">
+  <div class="container">
+    <div class="section__header reveal">
+      <div class="section__label">机制宪法 / Mechanism covenant</div>
+      <h2 class="section__title">承诺，与不承诺</h2>
+      <p class="section__desc">Nexus 给你看得见的推演过程，但不给你确定的结果。这是一份诚实的契约。</p>
+    </div>
+    <div class="covenant__split reveal">
+      <div class="covenant__col covenant__col--promise">
+        <h3 class="covenant__col-title">Nexus 承诺<span class="covenant__col-title-en">What Nexus promises</span></h3>
+        <ul class="covenant__list">
+          <li>过程透明——变量、关系、假设、主体行为、事件、概率全部显式呈现，不藏黑盒</li>
+          <li>结果可追溯——每一个结果都能追到具体的变量、主体、因果边和事件。</li>
+          <li>世界可修改——用户能修改任何假设并立即看到影响。</li>
+          <li>不确定性诚实——缺数据不伪造精确值，概率分布带可信边界标注。</li>
+          <li>信息边界受尊重——主体只能基于自己看得见的信息行动。</li>
+          <li>历史回放不偷看未来——cutoff 后信息只用于评估，不用于推演</li>
+        </ul>
+      </div>
+      <div class="covenant__col covenant__col--refuse">
+        <h3 class="covenant__col-title">Nexus 不承诺<span class="covenant__col-title-en">What Nexus does not promise</span></h3>
+        <ul class="covenant__list">
+          <li>不承诺预测未来一定准确。</li>
+          <li>不承诺给唯一答案——只给可能情况分布。</li>
+          <li>不承诺覆盖现实所有变量。</li>
+          <li>不承诺预测黑天鹅何时发生</li>
+          <li>不承诺代替人做最终决策。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ══ -->
+<section class="cta" id="cta" data-world-state="早期访问" data-world-state-desc="Access layer" data-world-state-index="08" data-world-state-tone="65">
+  <div class="cta__bg"></div>
+  <div class="container">
+    <h2 class="cta__title reveal">看见可能性，<br>而非确定性</h2>
+    <div class="cta__title-en reveal">See possibilities, not certainties.</div>
+    <p class="cta__desc reveal">
+      Nexus 不替你决策。它帮你构建一个可审计的商业世界，<br>
+      让你在其中推演、追踪、质疑、修改——直到你真正理解每个选择意味着什么。    </p>
+    <div class="cta__actions reveal">
+      <a href="javascript:void(0)" class="btn btn--primary" onclick="nexusToast('早期访问申请已记录。我们会尽快与您联系。')">
+        申请早期访问
+        <svg class="btn__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="javascript:void(0)" class="btn btn--ghost" onclick="nexusToast('技术文档正在编写中。')">阅读技术文档</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ══ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__inner">
+      <div class="footer__copy">Nexus · Causal Simulation Engine · 2026</div>
+      <div class="footer__links">
+        <a href="javascript:void(0)" onclick="nexusToast('文档正在编写中。')">文档</a>
+        <a href="javascript:void(0)" onclick="nexusToast('论文即将发布。')">论文</a>
+        <a href="javascript:void(0)" onclick="nexusToast('GitHub 仓库即将公开。')">GitHub</a>
+        <a href="javascript:void(0)" onclick="nexusToast('请联系 team@nexus.dev')">联系</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════   HERO CANVAS — Causal Network Visualization
+   Nodes drift slowly, connected by edges.
+   Represents the causal graph concept.
+   ═══════════════════════════════════════════════════*/
+(function() {
+  'use strict';
+
+  const canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  let W = 0, H = 0;
+  let nodes = [];
+  let edges = [];
+  let mouseX = 0, mouseY = 0;
+  let rafId = null;
+
+  const NODE_COUNT = 34;
+  const MAX_EDGE_DIST = 190;
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+    mouseX = W * 0.5;
+    mouseY = H * 0.5;
+  }
+
+  function initNodes() {
+    nodes = [];
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const ring = i % 3;
+      const angle = (i / NODE_COUNT) * Math.PI * 2 + ring * 0.42;
+      const radius = Math.min(W, H) * (0.18 + ring * 0.11 + Math.random() * 0.08);
+      const centerX = W * 0.54;
+      const centerY = H * 0.48;
+      nodes.push({
+        x: centerX + Math.cos(angle) * radius,
+        y: centerY + Math.sin(angle) * radius * 0.72,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.18,
+        r: Math.random() * 1.8 + 1.5,
+        hue: i % 8 === 0 || i % 13 === 0 ? 65 : 268,
+        pulse: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function updateEdges() {
+    edges = [];
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MAX_EDGE_DIST) {
+          edges.push({ a: i, b: j, dist: dist, opacity: 1 - dist / MAX_EDGE_DIST });
+        }
+      }
+    }
+  }
+
+  function draw(time) {
+    ctx.clearRect(0, 0, W, H);
+
+    // Update nodes
+    for (const n of nodes) {
+      n.x += n.vx;
+      n.y += n.vy;
+      n.pulse += 0.02;
+
+      // Bounce off edges
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+
+      // Mouse repulsion
+      const dx = n.x - mouseX;
+      const dy = n.y - mouseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 1 && dist < 100) {
+        n.x += (dx / dist) * 0.5;
+        n.y += (dy / dist) * 0.5;
+      }
+    }
+
+    updateEdges();
+
+    // Draw world boundary and scenario paths
+    ctx.save();
+    ctx.translate(W * 0.54, H * 0.48);
+    ctx.strokeStyle = 'oklch(0.52 0.18 268 / 0.16)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.ellipse(0, 0, W * (0.19 + i * 0.1), H * (0.13 + i * 0.07), -0.18 + i * 0.18, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = 'oklch(0.72 0.16 65 / 0.26)';
+    ctx.lineWidth = 1.3;
+    ctx.setLineDash([5, 8]);
+    ctx.beginPath();
+    ctx.moveTo(W * 0.19, H * 0.58);
+    ctx.bezierCurveTo(W * 0.34, H * 0.28, W * 0.56, H * 0.32, W * 0.80, H * 0.22);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(W * 0.24, H * 0.68);
+    ctx.bezierCurveTo(W * 0.43, H * 0.50, W * 0.60, H * 0.72, W * 0.84, H * 0.56);
+    ctx.stroke();
+    ctx.restore();
+
+    // Draw edges
+    for (const e of edges) {
+      const a = nodes[e.a];
+      const b = nodes[e.b];
+      ctx.strokeStyle = `oklch(0.52 0.18 268 / ${e.opacity * 0.20})`;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+
+    // Draw nodes
+    for (const n of nodes) {
+      const pulseSize = Math.sin(n.pulse) * 0.5 + 1;
+      const r = n.r * pulseSize;
+
+      // Glow
+      const gradient = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 8);
+      const color = n.hue === 65 ? '0.72 0.16 65' : '0.52 0.18 268';
+      gradient.addColorStop(0, `oklch(${color} / 0.4)`);
+      gradient.addColorStop(0.5, `oklch(${color} / 0.1)`);
+      gradient.addColorStop(1, `oklch(${color} / 0)`);
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r * 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Core
+      ctx.fillStyle = `oklch(${color} / 0.9)`;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Draw active world core
+    const core = ctx.createRadialGradient(W * 0.54, H * 0.48, 0, W * 0.54, H * 0.48, Math.min(W, H) * 0.17);
+    core.addColorStop(0, 'oklch(0.72 0.16 65 / 0.34)');
+    core.addColorStop(0.42, 'oklch(0.52 0.18 268 / 0.15)');
+    core.addColorStop(1, 'oklch(0.52 0.18 268 / 0)');
+    ctx.fillStyle = core;
+    ctx.beginPath();
+    ctx.arc(W * 0.54, H * 0.48, Math.min(W, H) * 0.17, 0, Math.PI * 2);
+    ctx.fill();
+
+    rafId = requestAnimationFrame(draw);
+  }
+
+  function start() {
+    resize();
+    initNodes();
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(draw);
+  }
+
+  function handleMouse(e) {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+  }
+
+  // Check reduced motion
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // Draw a single static frame
+    resize();
+    initNodes();
+    updateEdges();
+    ctx.clearRect(0, 0, W, H);
+    for (const e of edges) {
+      const a = nodes[e.a];
+      const b = nodes[e.b];
+      ctx.strokeStyle = `oklch(0.52 0.18 268 / ${e.opacity * 0.15})`;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    for (const n of nodes) {
+      ctx.fillStyle = n.hue === 65 ? 'oklch(0.72 0.16 65 / 0.8)' : 'oklch(0.52 0.18 268 / 0.8)';
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    return;
+  }
+
+  canvas.addEventListener('mousemove', handleMouse);
+  window.addEventListener('resize', () => {
+    resize();
+    initNodes();
+  });
+
+  // Start after fonts load
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(start);
+  } else {
+    start();
+  }
+})();
+
+/* ═══════════════════════════════════════════════════   SCROLL REVEAL — IntersectionObserver
+   ═══════════════════════════════════════════════════*/
+(function() {
+  'use strict';
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.01,
+    rootMargin: '0px 0px 0px 0px'
+  });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Fallback: force-reveal any element not yet visible after 3s
+  setTimeout(function() {
+    document.querySelectorAll('.reveal:not(.is-visible)').forEach(function(el) {
+      el.classList.add('is-visible');
+    });
+  }, 3000);
+})();
+
+/* ═══════════════════════════════════════════════════   HERO STAT COUNT-UP
+   ═══════════════════════════════════════════════════*/
+/* WORLD STATE HUD - scroll narrative layer */
+(function() {
+  'use strict';
+
+  var sections = Array.prototype.slice.call(document.querySelectorAll('[data-world-state]'));
+  var hud = document.querySelector('.world-state-hud');
+  var field = document.querySelector('.world-state-field');
+  if (!sections.length || !hud || !field) return;
+
+  var root = document.documentElement;
+  var stage = document.querySelector('.world-stage');
+  var stageIndex = stage ? stage.querySelector('.world-stage__readout-index') : null;
+  var stageTitle = stage ? stage.querySelector('.world-stage__readout-title') : null;
+  var title = hud.querySelector('.world-state-hud__title');
+  var desc = hud.querySelector('.world-state-hud__desc');
+  var index = hud.querySelector('.world-state-hud__index');
+  var activeSection = null;
+  var switchTimer = null;
+  var stageTimer = null;
+  var ticking = false;
+  var stageProfiles = [
+    { topology: 'entry', density: '82px', focusX: '68%', focusY: '40%', rotation: '-9deg', scale: '0.96', uncertainty: '0.22' },
+    { topology: 'fracture', density: '58px', focusX: '76%', focusY: '46%', rotation: '-14deg', scale: '1.02', uncertainty: '0.54' },
+    { topology: 'contract', density: '74px', focusX: '58%', focusY: '44%', rotation: '-4deg', scale: '0.98', uncertainty: '0.18' },
+    { topology: 'distribution', density: '92px', focusX: '64%', focusY: '52%', rotation: '3deg', scale: '1.04', uncertainty: '0.36' },
+    { topology: 'capability', density: '68px', focusX: '72%', focusY: '38%', rotation: '-18deg', scale: '1.00', uncertainty: '0.30' },
+    { topology: 'boundary', density: '86px', focusX: '54%', focusY: '48%', rotation: '10deg', scale: '0.94', uncertainty: '0.24' },
+    { topology: 'loop', density: '62px', focusX: '62%', focusY: '56%', rotation: '18deg', scale: '1.05', uncertainty: '0.20' },
+    { topology: 'covenant', density: '78px', focusX: '50%', focusY: '42%', rotation: '-2deg', scale: '0.97', uncertainty: '0.16' },
+    { topology: 'access', density: '96px', focusX: '66%', focusY: '46%', rotation: '-7deg', scale: '1.01', uncertainty: '0.26' }
+  ];
+
+  function activate(section) {
+    if (!section || section === activeSection) return;
+    activeSection = section;
+
+    sections.forEach(function(item) {
+      item.classList.toggle('world-state-active', item === section);
+    });
+
+    var idx = Math.max(0, parseInt(section.getAttribute('data-world-state-index') || '0', 10));
+    var tone = section.getAttribute('data-world-state-tone') || '268';
+    var progress = Math.round(((idx + 1) / sections.length) * 100);
+    var y = Math.min(70, 26 + idx * 5);
+
+    if (title) title.textContent = section.getAttribute('data-world-state') || 'Nexus World';
+    if (desc) desc.textContent = section.getAttribute('data-world-state-desc') || 'Causal Simulation Engine';
+    if (index) index.textContent = String(idx).padStart(2, '0') + ' / ' + String(sections.length - 1).padStart(2, '0');
+
+    root.style.setProperty('--state-hue', tone);
+    root.style.setProperty('--state-progress', progress + '%');
+    root.style.setProperty('--state-y', y + '%');
+    var profile = stageProfiles[idx] || stageProfiles[0];
+    root.style.setProperty('--stage-density', profile.density);
+    root.style.setProperty('--stage-focus-x', profile.focusX);
+    root.style.setProperty('--stage-focus-y', profile.focusY);
+    root.style.setProperty('--stage-rotation', profile.rotation);
+    root.style.setProperty('--stage-scale', profile.scale);
+    root.style.setProperty('--stage-uncertainty', profile.uncertainty);
+    if (stage) stage.setAttribute('data-topology', profile.topology);
+    if (stageIndex) stageIndex.textContent = String(idx).padStart(2, '0') + ' / ' + String(sections.length - 1).padStart(2, '0');
+    if (stageTitle) stageTitle.textContent = section.getAttribute('data-world-state') || 'Nexus World';
+
+    hud.classList.add('is-switching');
+    field.classList.add('is-switching');
+    if (stage && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      stage.classList.add('is-shifting');
+      window.clearTimeout(stageTimer);
+      stageTimer = window.setTimeout(function() {
+        stage.classList.remove('is-shifting');
+      }, 1250);
+    }
+    window.clearTimeout(switchTimer);
+    switchTimer = window.setTimeout(function() {
+      hud.classList.remove('is-switching');
+      field.classList.remove('is-switching');
+    }, 1450);
+  }
+
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) activate(entry.target);
+    });
+  }, {
+    threshold: 0.01,
+    rootMargin: '-42% 0px -42% 0px'
+  });
+
+  sections.forEach(function(section) {
+    observer.observe(section);
+  });
+
+  function pickActiveByViewport() {
+    var center = window.innerHeight * 0.48;
+    var best = sections[0];
+    var bestDistance = Infinity;
+
+    sections.forEach(function(section) {
+      var rect = section.getBoundingClientRect();
+      if (rect.top <= center && rect.bottom >= center) {
+        best = section;
+        bestDistance = 0;
+        return;
+      }
+      var distance = Math.min(Math.abs(rect.top - center), Math.abs(rect.bottom - center));
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = section;
+      }
+    });
+
+    activate(best);
+    ticking = false;
+  }
+
+  function requestPick() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(pickActiveByViewport);
+  }
+
+  window.addEventListener('scroll', requestPick, { passive: true });
+  window.addEventListener('resize', requestPick);
+  window.setTimeout(requestPick, 250);
+
+  activate(sections[0]);
+})();
+
+(function() {
+  'use strict';
+  var vals = [];
+  vals.forEach(function(el) {
+    var target = parseInt(el.getAttribute('data-count'), 10);
+    var started = false;
+    function countUp() {
+      if (started) return;
+      started = true;
+      var current = 0;
+      var duration = 1400;
+      var start = performance.now();
+      function tick(now) {
+        var elapsed = now - start;
+        var progress = Math.min(elapsed / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        current = Math.round(eased * target);
+        el.textContent = current;
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(tick);
+    }
+    setTimeout(countUp, 1600);
+  });
+})();
+
+/* ═══════════════════════════════════════════════════   NAV — scroll state
+   ═══════════════════════════════════════════════════*/
+(function() {
+  'use strict';
+
+  const nav = document.querySelector('.nav');
+  let lastScrollY = 0;
+
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    if (scrollY > 50) {
+      nav.style.borderColor = 'var(--border)';
+      nav.style.background = 'oklch(0.06 0.000 0 / 0.85)';
+      nav.style.boxShadow = '0 4px 24px oklch(0 0 0 / 0.3)';
+    } else {
+      nav.style.borderColor = 'var(--border-faint)';
+      nav.style.background = 'oklch(0.06 0.000 0 / 0.7)';
+      nav.style.boxShadow = 'none';
+    }
+    lastScrollY = scrollY;
+  }, { passive: true });
+})();
+
+/* ═══════════════════════════════════════════════════   SCROLL PROGRESS BAR
+   ═══════════════════════════════════════════════════*/
+(function() {
+  'use strict';
+  var bar = document.getElementById('scrollProgress');
+  if (!bar) return;
+  var ticking = false;
+  function update() {
+    var scrolled = window.scrollY;
+    var height = document.documentElement.scrollHeight - window.innerHeight;
+    var ratio = height > 0 ? scrolled / height : 0;
+    bar.style.width = (ratio * 100) + '%';
+    ticking = false;
+  }
+  function requestUpdate() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(update);
+  }
+  window.addEventListener('scroll', requestUpdate, { passive: true });
+  update();
+})();
+
+/* ═══════════════════════════════════════════════════   MOUSE SPOTLIGHT
+   ═══════════════════════════════════════════════════*/
+(function() {
+  'use strict';
+  var spot = document.getElementById('spotlight');
+  if (!spot) return;
+  if (window.getComputedStyle(spot).display === 'none') return;
+  if (window.matchMedia('(pointer: coarse)').matches) return; // skip touch
+  var raf = null;
+  var tx = 0, ty = 0;
+  document.addEventListener('mousemove', function(e) {
+    tx = e.clientX;
+    ty = e.clientY;
+    spot.style.opacity = '1';
+    if (!raf) {
+      raf = requestAnimationFrame(function() {
+        spot.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) translate(-50%, -50%)';
+        raf = null;
+      });
+    }
+  });
+  document.addEventListener('mouseleave', function() {
+    spot.style.opacity = '0';
+  });
+})();
+
+/* ═══════════════════════════════════════════════════   BENTO 3D TILT
+   ═══════════════════════════════════════════════════*/
+(function() {
+  'use strict';
+  if (window.matchMedia('(pointer: coarse)').matches) return;
+  var cells = document.querySelectorAll('.bento__cell');
+  cells.forEach(function(cell) {
+    cell.addEventListener('mousemove', function(e) {
+      var rect = cell.getBoundingClientRect();
+      var x = (e.clientX - rect.left) / rect.width;
+      var y = (e.clientY - rect.top) / rect.height;
+      var tiltX = (0.5 - y) * 6;
+      var tiltY = (x - 0.5) * 6;
+      cell.style.transform = 'perspective(800px) rotateX(' + tiltX + 'deg) rotateY(' + tiltY + 'deg) translateY(-2px)';
+    });
+    cell.addEventListener('mouseleave', function() {
+      cell.style.transform = '';
+    });
+  });
+})();
+
+/* ═══════════════════════════════════════════════════   LOOP STEP POINTER HIGHLIGHT
+   ═══════════════════════════════════════════════════*/
+(function() {
+  'use strict';
+  var steps = document.querySelectorAll('.loop__step');
+  if (!steps.length) return;
+  var wrap = document.querySelector('.loop__steps');
+  if (!wrap) return;
+  var loop = document.querySelector('.loop');
+  var coreState = document.querySelector('.loop__core-state');
+  var lockText = document.querySelector('.loop__lock-text');
+  var orbitNodes = document.querySelectorAll('.loop__orbit-node');
+  var stateIndex = document.querySelector('.loop__state-index');
+  var stateFill = document.querySelector('.loop__state-fill');
+  var activeStep = null;
+  var ticking = false;
+
+  function activate(step) {
+    if (!step || step === activeStep) return;
+    activeStep = step;
+    steps.forEach(function(s) { s.classList.remove('loop__step--active'); });
+    orbitNodes.forEach(function(n) { n.classList.remove('loop__orbit-node--active'); });
+    step.classList.add('loop__step--active');
+    wrap.classList.add('is-pointing');
+
+    var index = Array.prototype.indexOf.call(steps, step);
+    var orbitNode = document.querySelector('.loop__orbit-node[data-step="' + index + '"]');
+    if (orbitNode) orbitNode.classList.add('loop__orbit-node--active');
+    if (coreState) coreState.textContent = step.getAttribute('data-loop-state') || 'World Model';
+    if (lockText) lockText.textContent = (step.getAttribute('data-loop-lock') || 'World Model Locked').toUpperCase();
+    if (stateIndex) stateIndex.textContent = String(index + 1).padStart(2, '0') + ' / 07';
+    if (stateFill) stateFill.style.setProperty('--loop-progress', Math.round(((index + 1) / steps.length) * 100) + '%');
+    var wrapRect = wrap.getBoundingClientRect();
+    var stepRect = step.getBoundingClientRect();
+    var top = stepRect.top - wrapRect.top + 12;
+    var height = Math.max(42, stepRect.height - 24);
+    wrap.style.setProperty('--loop-active-top', top + 'px');
+    wrap.style.setProperty('--loop-active-height', height + 'px');
+  }
+
+  function clear() {
+    wrap.classList.remove('is-pointing');
+    steps.forEach(function(s) { s.classList.remove('loop__step--active'); });
+    orbitNodes.forEach(function(n) { n.classList.remove('loop__orbit-node--active'); });
+    if (coreState) coreState.textContent = 'World Model';
+    if (lockText) lockText.textContent = 'WORLD MODEL LOCKED';
+    if (stateIndex) stateIndex.textContent = '01 / 07';
+    if (stateFill) stateFill.style.setProperty('--loop-progress', '14%');
+    activeStep = null;
+  }
+
+  function pickByScroll() {
+    ticking = false;
+    if (!loop) return;
+    var loopRect = loop.getBoundingClientRect();
+    if (loopRect.bottom < window.innerHeight * 0.18 || loopRect.top > window.innerHeight * 0.82) {
+      return;
+    }
+
+    var targetY = window.innerHeight * 0.46;
+    var best = steps[0];
+    var bestDistance = Infinity;
+
+    steps.forEach(function(step) {
+      var rect = step.getBoundingClientRect();
+      var center = rect.top + rect.height * 0.5;
+      var distance = Math.abs(center - targetY);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = step;
+      }
+    });
+
+    activate(best);
+  }
+
+  function requestPick() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(pickByScroll);
+  }
+
+  steps.forEach(function(step) {
+    step.setAttribute('tabindex', '0');
+    step.addEventListener('focus', function() { activate(step); });
+  });
+  window.addEventListener('scroll', requestPick, { passive: true });
+  window.addEventListener('resize', requestPick);
+  wrap.addEventListener('focusout', function(e) {
+    if (!wrap.contains(e.relatedTarget)) clear();
+  });
+  activate(steps[0]);
+  window.setTimeout(requestPick, 250);
+})();
+
+/* ═══════════════════════════════════════════════════   TOAST — CTA feedback
+   ═══════════════════════════════════════════════════*/
+function nexusToast(message) {
+  var existing = document.querySelector('.nexus-toast');
+  if (existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.className = 'nexus-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  requestAnimationFrame(function() {
+    toast.classList.add('nexus-toast--visible');
+  });
+  setTimeout(function() {
+    toast.classList.remove('nexus-toast--visible');
+    setTimeout(function() { toast.remove(); }, 400);
+  }, 3000);
+}
+</script>
+
+</body>
+</html>
